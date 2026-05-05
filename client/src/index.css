@@ -1,3 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply font-sans text-slate-700 antialiased bg-slate-50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display text-slate-900 tracking-tight;
+  }
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-slate-100 shadow-soft;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-card hover:-translate-y-0.5;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800
+           placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-100 focus:border-brand-400
+           transition-all;
+  }
+  .label {
+    @apply text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition-all duration-150 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-glow hover:bg-brand-700 focus:ring-brand-200 active:translate-y-px;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50
+           focus:ring-slate-100;
+  }
+  .btn-ghost {
+    @apply btn text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus:ring-slate-100;
+  }
+  .btn-danger {
+    @apply btn bg-rose-500 text-white hover:bg-rose-600 focus:ring-rose-100;
+  }
+  .pill {
+    @apply inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full;
+  }
+  .section-title {
+    @apply text-[11px] font-semibold text-slate-400 uppercase tracking-[0.12em];
+  }
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+  .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: rgb(203 213 225); border-radius: 999px; }
+}

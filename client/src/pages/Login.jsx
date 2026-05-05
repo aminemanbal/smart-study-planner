@@ -1,59 +1,123 @@
 import { useState } from 'react'
-import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { IconLogo } from '../components/Icons'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
+    setLoading(true)
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', form)
-      localStorage.setItem('token', res.data.token)
+      await login(form)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 w-full max-w-md">
-        <div className="text-center mb-8">
-          <span className="text-3xl"></span>
-          <h1 className="text-2xl font-semibold mt-2 text-gray-800">Welcome back</h1>
-          <p className="text-gray-400 text-sm mt-1">Sign in to your study planner</p>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white">
+      {/* Hero / brand panel */}
+      <div className="relative hidden lg:flex flex-col justify-between p-12 bg-brand-gradient text-white overflow-hidden">
+        <div className="absolute inset-0 bg-mesh opacity-60" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-pink-500/30 blur-3xl" />
+
+        <div className="relative flex items-center gap-3">
+          <IconLogo className="w-10 h-10" />
+          <span className="font-display font-bold text-xl">Study Planner</span>
         </div>
-        {error && <p className="text-red-500 mb-4 text-sm bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-gray-400 uppercase block mb-1">Email</label>
-            <input
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={e => setForm({...form, email: e.target.value})}
-            />
+
+        <div className="relative">
+          <h1 className="text-4xl xl:text-5xl font-display font-extrabold leading-tight">
+            Transform academic chaos into structured execution.
+          </h1>
+          <p className="mt-6 text-lg text-white/80 max-w-md">
+            Plan smarter, study consistently, and never miss an exam again.
+          </p>
+
+          <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
+            {[
+              { v: '8w', l: 'Build duration' },
+              { v: '5+', l: 'Smart modules' },
+              { v: '24/7', l: 'Cloud access' },
+            ].map((s, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur rounded-2xl p-4 border border-white/10">
+                <p className="text-2xl font-extrabold">{s.v}</p>
+                <p className="text-xs text-white/70 mt-1">{s.l}</p>
+              </div>
+            ))}
           </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-400 uppercase block mb-1">Password</label>
-            <input
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={e => setForm({...form, password: e.target.value})}
-            />
-          </div>
-          <button className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors mt-2" type="submit">
-            Sign In
-          </button>
-        </form>
-        <p className="mt-6 text-sm text-center text-gray-400">
-          Don't have an account? <Link to="/register" className="text-blue-600 font-medium hover:underline">Sign up</Link>
+        </div>
+
+        <p className="relative text-sm text-white/60 italic">
+          "The best systems are not the most complex — but the ones that make life simpler and clearer."
         </p>
+      </div>
+
+      {/* Form panel */}
+      <div className="flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md animate-fade-in">
+          <div className="lg:hidden flex items-center gap-2 mb-10">
+            <IconLogo className="w-9 h-9" />
+            <span className="font-display font-bold text-slate-900 text-lg">Study Planner</span>
+          </div>
+
+          <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
+          <p className="text-slate-500 mt-1.5">Sign in to continue your study plan.</p>
+
+          {error && (
+            <div className="mt-6 bg-rose-50 border border-rose-100 text-rose-700 text-sm px-4 py-3 rounded-xl animate-fade-in">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div>
+              <label className="label">Email</label>
+              <input
+                className="input"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Password</label>
+              <input
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                required
+              />
+            </div>
+            <button disabled={loading} className="btn-primary w-full py-3" type="submit">
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="mt-8 text-sm text-center text-slate-500">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-brand-600 font-semibold hover:underline">
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

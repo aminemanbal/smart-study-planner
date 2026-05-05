@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -7,23 +8,49 @@ import Exams from './pages/Exams'
 import Tasks from './pages/Tasks'
 import Progress from './pages/Progress'
 
-function App() {
-  const token = localStorage.getItem('token')
+const Loader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-brand-600 animate-spin" />
+      <p className="text-sm text-slate-400">Loading…</p>
+    </div>
+  </div>
+)
 
+const Protected = ({ children }) => {
+  const { token, loading } = useAuth()
+  if (loading) return <Loader />
+  return token ? children : <Navigate to="/login" replace />
+}
+
+const PublicOnly = ({ children }) => {
+  const { token, loading } = useAuth()
+  if (loading) return <Loader />
+  return token ? <Navigate to="/dashboard" replace /> : children
+}
+
+function AppRoutes() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/subjects" element={token ? <Subjects /> : <Navigate to="/login" />} />
-        <Route path="/exams" element={token ? <Exams /> : <Navigate to="/login" />} />
-        <Route path="/tasks" element={token ? <Tasks /> : <Navigate to="/login" />} />
-        <Route path="/progress" element={token ? <Progress /> : <Navigate to="/login" />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/login"     element={<PublicOnly><Login /></PublicOnly>} />
+      <Route path="/register"  element={<PublicOnly><Register /></PublicOnly>} />
+      <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+      <Route path="/subjects"  element={<Protected><Subjects /></Protected>} />
+      <Route path="/exams"     element={<Protected><Exams /></Protected>} />
+      <Route path="/tasks"     element={<Protected><Tasks /></Protected>} />
+      <Route path="/progress"  element={<Protected><Progress /></Protected>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
