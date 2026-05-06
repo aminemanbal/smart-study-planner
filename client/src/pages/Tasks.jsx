@@ -50,8 +50,8 @@ export default function Tasks() {
       setTimeout(() => setMsg(''), 6000)
     } catch (err) {
       const m = err.response?.data?.message || 'AI plan generation failed'
-      setError(m.includes('ANTHROPIC_API_KEY')
-        ? 'AI is not configured — add ANTHROPIC_API_KEY to server/.env to enable.'
+      setError(m.includes('GROQ_API_KEY')
+        ? 'AI is not configured — add GROQ_API_KEY to server/.env to enable. (Get one free at console.groq.com)'
         : m)
     } finally { setAiLoading(false) }
   }

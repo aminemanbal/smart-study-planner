@@ -1,68 +1,52 @@
 /*
-  AI SERVICE — wraps the Anthropic SDK for the Smart Study Planner.
+  AI SERVICE — wraps the Groq API for the Smart Study Planner.
 
   Three capabilities are layered on top of one shared client:
-    1. generateAIStudyPlan(userId)  — replaces the rule-based planner with an
+    1. generateAIStudyPlan(...)  — replaces the rule-based planner with an
        LLM that reasons about workload, deadlines, and past performance.
-    2. getAIInsights(userId)        — produces 3 short, data-driven coaching
+    2. getAIInsights(...)        — produces 2-4 short, data-driven coaching
        tips for the dashboard.
-    3. chatStream(...)              — streaming, tool-using study coach.
+    3. chatStream(...)           — streaming, tool-using study coach.
 
-  Defaults (per the claude-api skill):
-    - Model:     claude-opus-4-7
-    - Thinking:  adaptive (no temperature/top_p/budget_tokens on Opus 4.7)
-    - Streaming: used on long outputs (chat) to avoid HTTP timeouts
-    - Caching:   cache_control on stable system prompts so multi-turn chats
-                 reuse the prefix on every reply
+  Why Groq + Llama 3.3 70B
+  ------------------------
+  - Real free tier (no credit card required to start).
+  - OpenAI-compatible API, so we use the standard `openai` SDK and just
+    point baseURL at Groq. Swap providers later by changing two lines.
+  - Llama 3.3 70B is smart enough for planning + tool-use + JSON output.
+  - Sub-second latency on most calls — feels much more responsive than
+    a typical hosted model in a chat UI.
+
+  To switch back to OpenAI / OpenRouter / Mistral: change BASE_URL + MODEL.
 */
 
-const Anthropic = require('@anthropic-ai/sdk')
+const OpenAI = require('openai')
 
-const MODEL = 'claude-opus-4-7'
+const BASE_URL = process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1'
+const MODEL    = process.env.GROQ_MODEL    || 'llama-3.3-70b-versatile'
 
 let _client = null
 const getClient = () => {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     const err = new Error(
-      'ANTHROPIC_API_KEY is not set. Add it to server/.env (see .env.example).'
+      'GROQ_API_KEY is not set. Add it to server/.env (see .env.example). ' +
+      'Get a free key at https://console.groq.com/keys'
     )
     err.code = 'MISSING_API_KEY'
     throw err
   }
-  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  if (!_client) {
+    _client = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: BASE_URL,
+    })
+  }
   return _client
 }
 
 /* ------------------------------------------------------------------ */
 /* 1. AI STUDY PLAN GENERATION                                         */
 /* ------------------------------------------------------------------ */
-
-const PLAN_SCHEMA = {
-  type: 'object',
-  properties: {
-    tasks: {
-      type: 'array',
-      description: 'Daily study sessions distributed up to each exam date.',
-      items: {
-        type: 'object',
-        properties: {
-          subjectId:        { type: 'string', description: 'MongoDB ObjectId (string) of the subject — copy verbatim from the input.' },
-          title:            { type: 'string', description: 'Specific study task. Mention concrete topics — not "Session 1".' },
-          date:             { type: 'string', description: 'ISO date YYYY-MM-DD on which the task should be done.' },
-          estimatedMinutes: { type: 'integer', description: 'Estimated minutes to spend (15–120).' },
-        },
-        required: ['subjectId', 'title', 'date', 'estimatedMinutes'],
-        additionalProperties: false,
-      },
-    },
-    rationale: {
-      type: 'string',
-      description: 'One short paragraph explaining why this distribution makes sense.',
-    },
-  },
-  required: ['tasks', 'rationale'],
-  additionalProperties: false,
-}
 
 const PLAN_SYSTEM = `You are an expert academic study coach.
 Your job: turn a student's exam schedule into a concrete, day-by-day study plan
@@ -76,7 +60,21 @@ PRINCIPLES
 - Each session is 25–90 minutes typically. Never less than 15, never more than 120.
 - Prefer 1–3 sessions per day per student total — do not flood any day.
 - If the student has a high miss rate, schedule slightly fewer sessions and add easy wins.
-- Output MUST conform exactly to the JSON schema. No prose outside JSON.`
+
+OUTPUT FORMAT — return ONLY a single JSON object with this exact shape:
+{
+  "tasks": [
+    {
+      "subjectId":        string,   // copy verbatim from the input subjects[].subjectId
+      "title":            string,   // specific study task ("Review chapter 3: derivatives")
+      "date":             string,   // ISO date YYYY-MM-DD
+      "estimatedMinutes": integer   // 15..120
+    }
+  ],
+  "rationale": string               // one short paragraph explaining the distribution
+}
+
+Do not include any prose outside the JSON. Do not invent subjectIds.`
 
 async function generateAIStudyPlan({ subjects, exams, history, today }) {
   const client = getClient()
@@ -89,11 +87,11 @@ async function generateAIStudyPlan({ subjects, exams, history, today }) {
       difficultyLevel: s.difficultyLevel,
     })),
     exams: exams.map(e => ({
-      subjectId: e.subjectId._id.toString(),
+      subjectId:   e.subjectId._id.toString(),
       subjectName: e.subjectId.name,
-      examDate:  new Date(e.examDate).toISOString().split('T')[0],
-      priority:  e.priority,
-      notes:     e.notes || '',
+      examDate:    new Date(e.examDate).toISOString().split('T')[0],
+      priority:    e.priority,
+      notes:       e.notes || '',
     })),
     history: {
       completedTasks: history.completed,
@@ -103,29 +101,32 @@ async function generateAIStudyPlan({ subjects, exams, history, today }) {
     },
   }
 
-  const response = await client.messages.create({
+  const completion = await client.chat.completions.create({
     model: MODEL,
-    max_tokens: 16000,
-    thinking: { type: 'adaptive' },
-    output_config: {
-      effort: 'high',
-      format: { type: 'json_schema', schema: PLAN_SCHEMA },
-    },
-    system: [{ type: 'text', text: PLAN_SYSTEM, cache_control: { type: 'ephemeral' } }],
-    messages: [{
-      role: 'user',
-      content: `Generate a study plan from this data:\n\n${JSON.stringify(userPayload, null, 2)}`,
-    }],
+    response_format: { type: 'json_object' },
+    max_completion_tokens: 8000,
+    temperature: 0.4,
+    messages: [
+      { role: 'system', content: PLAN_SYSTEM },
+      { role: 'user',   content: `Generate a study plan from this JSON data:\n\n${JSON.stringify(userPayload, null, 2)}` },
+    ],
   })
 
-  const textBlock = response.content.find(b => b.type === 'text')
-  if (!textBlock) throw new Error('AI returned no text block')
+  const text = completion.choices[0]?.message?.content
+  if (!text) throw new Error('AI returned empty response')
 
-  const parsed = JSON.parse(textBlock.text)
+  let parsed
+  try { parsed = JSON.parse(text) }
+  catch (e) { throw new Error('AI returned malformed JSON: ' + e.message) }
+
+  if (!Array.isArray(parsed.tasks)) {
+    throw new Error('AI response missing required "tasks" array')
+  }
+
   return {
     tasks: parsed.tasks,
-    rationale: parsed.rationale,
-    usage: response.usage,
+    rationale: parsed.rationale || '',
+    usage: completion.usage,
   }
 }
 
@@ -133,30 +134,8 @@ async function generateAIStudyPlan({ subjects, exams, history, today }) {
 /* 2. SMART SUGGESTIONS                                                */
 /* ------------------------------------------------------------------ */
 
-const INSIGHTS_SCHEMA = {
-  type: 'object',
-  properties: {
-    suggestions: {
-      type: 'array',
-      minItems: 2,
-      maxItems: 4,
-      items: {
-        type: 'object',
-        properties: {
-          tone:    { type: 'string', enum: ['info', 'warn', 'danger', 'success'] },
-          text:    { type: 'string', description: 'One sentence, friendly, max 140 chars.' },
-        },
-        required: ['tone', 'text'],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ['suggestions'],
-  additionalProperties: false,
-}
-
 const INSIGHTS_SYSTEM = `You are a friendly, brief study coach.
-Given a snapshot of a student's planner, return 2-4 actionable observations.
+Given a JSON snapshot of a student's planner, return 2-4 actionable observations.
 
 Tone mapping (pick the tone that fits best):
   - "warn"    : approaching deadlines, stretched workload
@@ -166,7 +145,15 @@ Tone mapping (pick the tone that fits best):
 
 Each suggestion is one sentence (≤140 chars), specific to THIS data.
 Do not invent numbers — use the ones provided.
-Output MUST conform exactly to the JSON schema. No prose outside JSON.`
+
+OUTPUT FORMAT — return ONLY a single JSON object with this exact shape:
+{
+  "suggestions": [
+    { "tone": "info" | "warn" | "danger" | "success", "text": string }
+  ]
+}
+
+Do not include any prose outside the JSON. Provide 2 to 4 suggestions.`
 
 async function getAIInsights({ subjects, exams, summary, today }) {
   const client = getClient()
@@ -186,31 +173,39 @@ async function getAIInsights({ subjects, exams, summary, today }) {
     subjectCount: subjects.length,
     upcomingExams: upcoming.slice(0, 6),
     progress: {
-      overall:        summary.overall,
-      completedTasks: summary.completed,
-      missedTasks:    summary.missed,
-      totalTasks:     summary.total,
+      overall:         summary.overall,
+      completedTasks:  summary.completed,
+      missedTasks:     summary.missed,
+      totalTasks:      summary.total,
       activeDaysLast7: summary.studiedDays,
     },
   }
 
-  const response = await client.messages.create({
+  const completion = await client.chat.completions.create({
     model: MODEL,
-    max_tokens: 1024,
-    output_config: {
-      format: { type: 'json_schema', schema: INSIGHTS_SCHEMA },
-    },
-    system: [{ type: 'text', text: INSIGHTS_SYSTEM, cache_control: { type: 'ephemeral' } }],
-    messages: [{
-      role: 'user',
-      content: `Snapshot:\n\n${JSON.stringify(payload, null, 2)}`,
-    }],
+    response_format: { type: 'json_object' },
+    max_completion_tokens: 800,
+    temperature: 0.6,
+    messages: [
+      { role: 'system', content: INSIGHTS_SYSTEM },
+      { role: 'user',   content: `Snapshot JSON:\n\n${JSON.stringify(payload, null, 2)}` },
+    ],
   })
 
-  const textBlock = response.content.find(b => b.type === 'text')
-  if (!textBlock) throw new Error('AI returned no text block')
-  const parsed = JSON.parse(textBlock.text)
+  const text = completion.choices[0]?.message?.content
+  if (!text) throw new Error('AI returned empty response')
+  const parsed = JSON.parse(text)
+  if (!Array.isArray(parsed.suggestions)) {
+    throw new Error('AI response missing "suggestions" array')
+  }
+  // Defensive normalisation
   return parsed.suggestions
+    .filter(s => s && typeof s.text === 'string')
+    .slice(0, 4)
+    .map(s => ({
+      tone: ['info', 'warn', 'danger', 'success'].includes(s.tone) ? s.tone : 'info',
+      text: s.text.trim().slice(0, 200),
+    }))
 }
 
 /* ------------------------------------------------------------------ */
@@ -241,58 +236,76 @@ If the student asks something unrelated to studying, gently redirect.`
 
 const CHAT_TOOLS = [
   {
-    name: 'get_today_tasks',
-    description: 'Return all tasks scheduled for today, with subject name and status.',
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
-  },
-  {
-    name: 'get_upcoming_exams',
-    description: 'Return exams scheduled within the next N days (default 14).',
-    input_schema: {
-      type: 'object',
-      properties: {
-        days: { type: 'integer', description: 'Lookahead window in days (1–60).' },
-      },
-      additionalProperties: false,
+    type: 'function',
+    function: {
+      name: 'get_today_tasks',
+      description: "Return all tasks scheduled for today, with subject name and status.",
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
     },
   },
   {
-    name: 'get_progress_summary',
-    description: 'Return overall completion rate, missed count, active days, and per-subject completion.',
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
-  },
-  {
-    name: 'get_subjects',
-    description: 'Return all subjects with their difficulty levels.',
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
-  },
-  {
-    name: 'mark_task_done',
-    description: 'Mark a single pending task as done. Use the task title (and optionally subject) to identify it; the backend will resolve to an ID.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        title:   { type: 'string', description: 'Exact task title as shown to the user.' },
-        subject: { type: 'string', description: 'Subject name (optional, for disambiguation).' },
+    type: 'function',
+    function: {
+      name: 'get_upcoming_exams',
+      description: 'Return exams scheduled within the next N days (default 14).',
+      parameters: {
+        type: 'object',
+        properties: {
+          days: { type: 'integer', description: 'Lookahead window in days (1-60).' },
+        },
+        additionalProperties: false,
       },
-      required: ['title'],
-      additionalProperties: false,
     },
   },
   {
-    name: 'regenerate_study_plan',
-    description: 'Wipe pending tasks and produce a fresh AI-generated plan from current subjects/exams. Use only when the user explicitly asks.',
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    type: 'function',
+    function: {
+      name: 'get_progress_summary',
+      description: 'Return overall completion rate, missed count, active days, and per-subject completion.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_subjects',
+      description: "Return all subjects with their difficulty levels.",
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'mark_task_done',
+      description: 'Mark a single pending task as done. Use the task title (and optionally subject) to identify it.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title:   { type: 'string', description: 'Exact task title as shown to the user.' },
+          subject: { type: 'string', description: 'Subject name (optional, for disambiguation).' },
+        },
+        required: ['title'],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'regenerate_study_plan',
+      description: 'Wipe pending tasks and produce a fresh AI-generated plan from current subjects/exams. Use only when the user explicitly asks.',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+    },
   },
 ]
 
 /**
  * Run a streaming chat turn. Drives the agentic loop and writes SSE events to `res`.
  *
- * @param {object}  args
- * @param {Array}   args.messages       Conversation history [{role, content}]
- * @param {Function} args.executeTool   async (name, input) => any
- * @param {object}  args.res            Express response (already SSE-headed)
+ * @param {object}   args
+ * @param {Array}    args.messages     Conversation history [{role, content}]
+ * @param {Function} args.executeTool  async (name, input) => any
+ * @param {object}   args.res          Express response (already SSE-headed)
  */
 async function chatStream({ messages, executeTool, res }) {
   const client = getClient()
@@ -301,63 +314,104 @@ async function chatStream({ messages, executeTool, res }) {
     res.write(`data: ${JSON.stringify(data)}\n\n`)
   }
 
-  // Defensive copy — we mutate inside the loop
-  const convo = messages.map(m => ({ ...m }))
+  // Build the OpenAI-format conversation. Frontend only sends user/assistant
+  // text turns; we prepend the system prompt and inject tool messages
+  // server-side as the loop progresses.
+  const convo = [
+    { role: 'system', content: CHAT_SYSTEM },
+    ...messages.map(m => ({
+      role: m.role,
+      content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content),
+    })),
+  ]
 
-  // Hard ceiling on tool-use rounds to prevent runaway loops
+  // Hard ceiling on tool-use rounds to prevent runaway loops.
   for (let round = 0; round < 8; round++) {
-    const stream = client.messages.stream({
+    const stream = await client.chat.completions.create({
       model: MODEL,
-      max_tokens: 4096,
-      thinking: { type: 'adaptive' },
-      system: [{ type: 'text', text: CHAT_SYSTEM, cache_control: { type: 'ephemeral' } }],
-      tools: CHAT_TOOLS,
       messages: convo,
+      tools: CHAT_TOOLS,
+      tool_choice: 'auto',
+      stream: true,
+      max_completion_tokens: 2048,
+      temperature: 0.6,
     })
 
-    stream.on('text', (delta) => send({ type: 'text', delta }))
+    let fullContent = ''
+    const toolAccum = {} // index -> { id, function: { name, arguments } }
+    let finishReason = null
 
-    const finalMessage = await stream.finalMessage()
+    for await (const chunk of stream) {
+      const choice = chunk.choices?.[0]
+      if (!choice) continue
+      const delta = choice.delta || {}
 
-    // Append the assistant turn to the history so tool_results can reference it
-    convo.push({ role: 'assistant', content: finalMessage.content })
+      if (delta.content) {
+        fullContent += delta.content
+        send({ type: 'text', delta: delta.content })
+      }
 
-    if (finalMessage.stop_reason === 'end_turn') {
-      send({ type: 'done', usage: finalMessage.usage })
-      return
+      if (Array.isArray(delta.tool_calls)) {
+        for (const tc of delta.tool_calls) {
+          const idx = tc.index ?? 0
+          if (!toolAccum[idx]) {
+            toolAccum[idx] = { id: '', type: 'function', function: { name: '', arguments: '' } }
+          }
+          if (tc.id) toolAccum[idx].id = tc.id
+          if (tc.function?.name) toolAccum[idx].function.name += tc.function.name
+          if (tc.function?.arguments) toolAccum[idx].function.arguments += tc.function.arguments
+        }
+      }
+
+      if (choice.finish_reason) finishReason = choice.finish_reason
     }
 
-    if (finalMessage.stop_reason !== 'tool_use') {
-      send({ type: 'done', usage: finalMessage.usage, stop_reason: finalMessage.stop_reason })
-      return
+    const toolCalls = Object.values(toolAccum).filter(tc => tc.function.name)
+
+    // Append the assistant turn (with tool_calls metadata if any).
+    if (toolCalls.length > 0) {
+      convo.push({
+        role: 'assistant',
+        content: fullContent || null,
+        tool_calls: toolCalls.map(tc => ({
+          id: tc.id,
+          type: 'function',
+          function: { name: tc.function.name, arguments: tc.function.arguments || '{}' },
+        })),
+      })
+    } else if (fullContent) {
+      convo.push({ role: 'assistant', content: fullContent })
     }
 
-    const toolUseBlocks = finalMessage.content.filter(b => b.type === 'tool_use')
-    if (toolUseBlocks.length === 0) {
+    // No tool calls => we're done.
+    if (toolCalls.length === 0 || finishReason === 'stop') {
       send({ type: 'done' })
       return
     }
 
-    const toolResults = []
-    for (const tu of toolUseBlocks) {
-      send({ type: 'tool_use', name: tu.name, input: tu.input })
+    // Execute every tool call and append the results.
+    for (const tc of toolCalls) {
+      const name = tc.function.name
+      let input = {}
+      try { input = JSON.parse(tc.function.arguments || '{}') } catch { /* keep {} */ }
+
+      send({ type: 'tool_use', name, input })
+
       let resultPayload, isError = false
       try {
-        resultPayload = await executeTool(tu.name, tu.input)
+        resultPayload = await executeTool(name, input)
       } catch (err) {
         resultPayload = { error: err.message }
         isError = true
       }
-      send({ type: 'tool_result', name: tu.name, isError })
-      toolResults.push({
-        type: 'tool_result',
-        tool_use_id: tu.id,
+      send({ type: 'tool_result', name, isError })
+
+      convo.push({
+        role: 'tool',
+        tool_call_id: tc.id,
         content: JSON.stringify(resultPayload),
-        is_error: isError,
       })
     }
-
-    convo.push({ role: 'user', content: toolResults })
   }
 
   send({ type: 'error', message: 'Maximum tool-use rounds exceeded.' })
