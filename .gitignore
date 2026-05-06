@@ -14,3 +14,9 @@ npm-debug.log*
 
 .vscode/
 .idea/
+
+# AI tooling — not part of the project
+.claude/
+.cursor/
+.aider*
+.codeium/
