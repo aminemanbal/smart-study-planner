@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
-  IconDashboard, IconBook, IconCalendar, IconCheck, IconChart, IconLogout, IconLogo, IconClose
+  IconDashboard, IconBook, IconCalendar, IconCheck, IconChart,
+  IconLogout, IconLogo, IconClose, IconSpark
 } from './Icons'
 
 const links = [
@@ -12,7 +13,7 @@ const links = [
   { to: '/progress',  label: 'Progress',  Icon: IconChart },
 ]
 
-export default function Sidebar({ open, onClose }) {
+export default function Sidebar({ open, onClose, onOpenChat }) {
   const { user, logout } = useAuth()
 
   const initials = user?.name
@@ -82,6 +83,20 @@ export default function Sidebar({ open, onClose }) {
               </li>
             ))}
           </ul>
+
+          {onOpenChat && (
+            <>
+              <p className="px-3 mt-7 mb-3 section-title">AI</p>
+              <button
+                onClick={() => { onClose?.(); onOpenChat() }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-gradient shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                <IconSpark className="w-5 h-5" />
+                Ask Pulse
+                <span className="ml-auto text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">NEW</span>
+              </button>
+            </>
+          )}
         </nav>
 
         <div className="px-4 py-4 border-t border-slate-100">

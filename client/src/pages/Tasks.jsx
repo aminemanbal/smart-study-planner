@@ -4,6 +4,7 @@ import TaskCard from '../components/TaskCard'
 import { IconSpark, IconCheck } from '../components/Icons'
 import * as taskService from '../services/taskService'
 import * as subjectService from '../services/subjectService'
+import * as aiService from '../services/aiService'
 
 export default function Tasks() {
   const [tasks, setTasks]       = useState([])
@@ -11,6 +12,8 @@ export default function Tasks() {
   const [filter, setFilter]     = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading]   = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiRationale, setAiRationale] = useState('')
   const [msg, setMsg]           = useState('')
   const [error, setError]       = useState('')
 
@@ -26,7 +29,7 @@ export default function Tasks() {
   useEffect(() => { fetchAll() }, [])
 
   const handleGenerate = async () => {
-    setLoading(true); setMsg(''); setError('')
+    setLoading(true); setMsg(''); setError(''); setAiRationale('')
     try {
       const res = await taskService.generate()
       setMsg(res.message)
@@ -35,6 +38,22 @@ export default function Tasks() {
     } catch (err) {
       setError(err.response?.data?.message || 'Error generating study plan')
     } finally { setLoading(false) }
+  }
+
+  const handleAIGenerate = async () => {
+    setAiLoading(true); setMsg(''); setError(''); setAiRationale('')
+    try {
+      const res = await aiService.generatePlan()
+      setMsg(res.message)
+      setAiRationale(res.rationale || '')
+      fetchAll()
+      setTimeout(() => setMsg(''), 6000)
+    } catch (err) {
+      const m = err.response?.data?.message || 'AI plan generation failed'
+      setError(m.includes('ANTHROPIC_API_KEY')
+        ? 'AI is not configured — add ANTHROPIC_API_KEY to server/.env to enable.'
+        : m)
+    } finally { setAiLoading(false) }
   }
 
   const handleStatus = async (id, status) => {
@@ -78,20 +97,39 @@ export default function Tasks() {
     { key: 'missed',  label: 'Missed' },
   ]
 
+  const busy = loading || aiLoading
+
   return (
     <Layout
       title="Tasks"
       subtitle="Your generated study plan, day by day."
       actions={
-        <button onClick={handleGenerate} disabled={loading} className="btn-primary">
-          <IconSpark className="w-4 h-4" />
-          {loading ? 'Generating…' : 'Generate Study Plan'}
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={handleGenerate} disabled={busy} className="btn-secondary">
+            {loading ? 'Generating…' : 'Quick Plan'}
+          </button>
+          <button
+            onClick={handleAIGenerate}
+            disabled={busy}
+            className="btn-primary relative overflow-hidden"
+            title="Generate a smart, AI-tailored study plan"
+          >
+            <IconSpark className="w-4 h-4" />
+            {aiLoading ? 'AI is planning…' : 'Generate with AI'}
+            <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[9px] font-bold bg-amber-400 text-amber-900 rounded-bl-md rounded-tr-md">
+              NEW
+            </span>
+          </button>
+        </div>
       }
     >
       {msg && (
-        <div className="mb-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-fade-in">
-          <IconCheck className="w-4 h-4" /> {msg}
+        <div className="mb-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-start gap-2 animate-fade-in">
+          <IconCheck className="w-4 h-4 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium">{msg}</p>
+            {aiRationale && <p className="mt-1 text-xs text-emerald-600/90">{aiRationale}</p>}
+          </div>
         </div>
       )}
       {error && (
@@ -138,7 +176,7 @@ export default function Tasks() {
           <h3 className="font-display font-bold text-slate-900 mt-4">No tasks here</h3>
           <p className="text-sm text-slate-500 mt-1">
             {tasks.length === 0
-              ? 'Add subjects and exams, then click "Generate Study Plan".'
+              ? 'Add subjects and exams, then click "Generate with AI" for a smart plan.'
               : 'No tasks match your current filters.'}
           </p>
         </div>

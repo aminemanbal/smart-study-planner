@@ -14,6 +14,7 @@ app.use('/api/subjects', require('./routes/subject.routes'))
 app.use('/api/exams',    require('./routes/exam.routes'))
 app.use('/api/tasks',    require('./routes/task.routes'))
 app.use('/api/progress', require('./routes/progress.routes'))
+app.use('/api/ai',       require('./routes/ai.routes'))
 
 app.use((err, req, res, next) => {
   console.error(err.stack)

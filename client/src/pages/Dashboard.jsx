@@ -5,11 +5,12 @@ import TaskCard from '../components/TaskCard'
 import ExamCountdown from '../components/ExamCountdown'
 import { OverallRing } from '../components/ProgressChart'
 import { useAuth } from '../context/AuthContext'
-import { IconBook, IconCalendar, IconCheck, IconFire, IconSpark, IconBell } from '../components/Icons'
+import { IconBook, IconCalendar, IconCheck, IconFire, IconSpark, IconBell, IconRefresh } from '../components/Icons'
 import * as taskService from '../services/taskService'
 import * as examService from '../services/examService'
 import * as subjectService from '../services/subjectService'
 import * as progressService from '../services/progressService'
+import * as aiService from '../services/aiService'
 
 const StatCard = ({ icon: Icon, label, value, gradient, hint }) => (
   <div className="card card-hover p-5 relative overflow-hidden">
@@ -27,12 +28,34 @@ const StatCard = ({ icon: Icon, label, value, gradient, hint }) => (
   </div>
 )
 
+const toneStyle = {
+  info:    'bg-brand-50    text-brand-700    border-brand-100',
+  warn:    'bg-amber-50    text-amber-800    border-amber-100',
+  danger:  'bg-rose-50     text-rose-700     border-rose-100',
+  success: 'bg-emerald-50  text-emerald-700  border-emerald-100',
+}
+
+const fallbackSuggestions = (summary, exams, todayTasks, subjects, daysLeft) => {
+  const out = []
+  const examsIn7Days = exams.filter(e => daysLeft(e.examDate) <= 7).length
+  if (examsIn7Days > 0) out.push({ tone: 'warn', text: `${examsIn7Days} exam${examsIn7Days>1?'s':''} in the next 7 days — review your plan.` })
+  if (summary?.missed > 3) out.push({ tone: 'danger', text: `You missed ${summary.missed} tasks — consider catching up.` })
+  if (todayTasks.length === 0 && exams.length > 0) out.push({ tone: 'info', text: 'No tasks scheduled for today — generate a new study plan.' })
+  if (summary?.overall >= 80) out.push({ tone: 'success', text: `You're at ${summary.overall}% completion — excellent pace!` })
+  if (subjects.length === 0) out.push({ tone: 'info', text: 'Start by adding your subjects in the Subjects page.' })
+  if (out.length === 0) out.push({ tone: 'success', text: 'Everything is on track — keep going!' })
+  return out
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
   const [tasks, setTasks]       = useState([])
   const [exams, setExams]       = useState([])
   const [subjects, setSubjects] = useState([])
   const [summary, setSummary]   = useState(null)
+  const [aiSuggestions, setAiSuggestions]     = useState(null)
+  const [aiLoading, setAiLoading]             = useState(false)
+  const [aiError, setAiError]                 = useState('')
 
   const fetchAll = async () => {
     try {
@@ -46,7 +69,27 @@ export default function Dashboard() {
     } catch (err) { console.error(err) }
   }
 
+  const fetchAiInsights = async () => {
+    setAiLoading(true); setAiError('')
+    try {
+      const data = await aiService.getInsights()
+      setAiSuggestions(data.suggestions)
+    } catch (err) {
+      setAiError(err.response?.data?.message || 'AI insights unavailable')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   useEffect(() => { fetchAll() }, [])
+
+  // Fetch AI insights once we have meaningful data to summarise
+  useEffect(() => {
+    if (subjects.length > 0 && summary !== null && !aiSuggestions && !aiLoading && !aiError) {
+      fetchAiInsights()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjects.length, summary])
 
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
@@ -89,21 +132,7 @@ export default function Dashboard() {
     return days
   }, [tasks, today])
 
-  const suggestions = []
-  const examsIn7Days = upcomingExams.filter(e => daysLeft(e.examDate) <= 7).length
-  if (examsIn7Days > 0) suggestions.push({ tone: 'warn', text: `${examsIn7Days} exam${examsIn7Days>1?'s':''} in the next 7 days — review your plan.` })
-  if (summary?.missed > 3) suggestions.push({ tone: 'danger', text: `You missed ${summary.missed} tasks — consider catching up.` })
-  if (todayTasks.length === 0 && exams.length > 0) suggestions.push({ tone: 'info', text: 'No tasks scheduled for today — generate a new study plan.' })
-  if (summary?.overall >= 80) suggestions.push({ tone: 'success', text: `You're at ${summary.overall}% completion — excellent pace!` })
-  if (subjects.length === 0) suggestions.push({ tone: 'info', text: 'Start by adding your subjects in the Subjects page.' })
-  if (suggestions.length === 0) suggestions.push({ tone: 'success', text: 'Everything is on track — keep going!' })
-
-  const toneStyle = {
-    info:    'bg-brand-50    text-brand-700    border-brand-100',
-    warn:    'bg-amber-50    text-amber-800    border-amber-100',
-    danger:  'bg-rose-50     text-rose-700     border-rose-100',
-    success: 'bg-emerald-50  text-emerald-700  border-emerald-100',
-  }
+  const suggestions = aiSuggestions || fallbackSuggestions(summary, upcomingExams, todayTasks, subjects, daysLeft)
 
   return (
     <Layout
@@ -177,26 +206,49 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="card p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <span className="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
-              <IconBell className="w-4 h-4" />
-            </span>
-            <div>
-              <h2 className="font-display font-bold text-slate-900">Smart Suggestions</h2>
-              <p className="text-xs text-slate-400">Data-driven recommendations</p>
+        <div className="card p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-gradient opacity-5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl bg-brand-gradient text-white flex items-center justify-center shadow-glow">
+                <IconSpark className="w-4 h-4" />
+              </span>
+              <div>
+                <h2 className="font-display font-bold text-slate-900">AI Suggestions</h2>
+                <p className="text-xs text-slate-400">
+                  {aiLoading ? 'Pulse is thinking…' : aiSuggestions ? 'Powered by Claude' : aiError ? 'Showing offline tips' : 'Heuristic tips'}
+                </p>
+              </div>
             </div>
-          </div>
-          <ul className="space-y-3">
-            {suggestions.map((s, i) => (
-              <li
-                key={i}
-                className={`text-sm px-4 py-3 rounded-xl border leading-relaxed ${toneStyle[s.tone]}`}
+            {aiSuggestions && !aiLoading && (
+              <button
+                onClick={fetchAiInsights}
+                className="text-slate-400 hover:text-brand-600 p-1.5 rounded-lg hover:bg-brand-50 transition-colors"
+                title="Refresh AI suggestions"
               >
-                {s.text}
-              </li>
-            ))}
-          </ul>
+                <IconRefresh className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {aiLoading && !aiSuggestions ? (
+            <div className="space-y-3 relative">
+              {[1,2,3].map(i => (
+                <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-3 relative">
+              {suggestions.map((s, i) => (
+                <li
+                  key={i}
+                  className={`text-sm px-4 py-3 rounded-xl border leading-relaxed ${toneStyle[s.tone] || toneStyle.info}`}
+                >
+                  {s.text}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

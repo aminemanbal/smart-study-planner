@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { IconLogo, IconMenu } from './Icons'
+import ChatPanel from './ChatPanel'
+import { IconLogo, IconMenu, IconSpark } from './Icons'
 
 export default function Layout({ children, title, subtitle, actions }) {
   const [open, setOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex bg-slate-50">
-      <Sidebar open={open} onClose={() => setOpen(false)} />
+      <Sidebar open={open} onClose={() => setOpen(false)} onOpenChat={() => setChatOpen(true)} />
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Mobile top bar */}
@@ -23,7 +25,13 @@ export default function Layout({ children, title, subtitle, actions }) {
             <IconLogo className="w-7 h-7" />
             <span className="font-display font-bold text-slate-900">Study Planner</span>
           </div>
-          <div className="w-9" />
+          <button
+            onClick={() => setChatOpen(true)}
+            className="text-slate-600 hover:text-brand-600 p-1.5 rounded-lg hover:bg-brand-50"
+            aria-label="Open AI chat"
+          >
+            <IconSpark className="w-5 h-5" />
+          </button>
         </header>
 
         {(title || actions) && (
@@ -42,6 +50,18 @@ export default function Layout({ children, title, subtitle, actions }) {
           {children}
         </main>
       </div>
+
+      {/* Floating Ask AI button (desktop) */}
+      <button
+        onClick={() => setChatOpen(true)}
+        className="hidden lg:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-brand-gradient text-white pl-4 pr-5 py-3 rounded-full shadow-glow hover:scale-105 active:scale-95 transition-all"
+        title="Ask the AI study coach"
+      >
+        <IconSpark className="w-5 h-5" />
+        <span className="font-semibold text-sm">Ask Pulse</span>
+      </button>
+
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   )
 }
