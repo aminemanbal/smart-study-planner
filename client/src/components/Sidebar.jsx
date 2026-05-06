@@ -93,7 +93,6 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
               >
                 <IconSpark className="w-5 h-5" />
                 Ask Pulse
-                <span className="ml-auto text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">NEW</span>
               </button>
             </>
           )}

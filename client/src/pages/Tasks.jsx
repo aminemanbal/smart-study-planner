@@ -111,14 +111,11 @@ export default function Tasks() {
           <button
             onClick={handleAIGenerate}
             disabled={busy}
-            className="btn-primary relative overflow-hidden"
+            className="btn-primary"
             title="Generate a smart, AI-tailored study plan"
           >
             <IconSpark className="w-4 h-4" />
             {aiLoading ? 'AI is planning…' : 'Generate with AI'}
-            <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[9px] font-bold bg-amber-400 text-amber-900 rounded-bl-md rounded-tr-md">
-              NEW
-            </span>
           </button>
         </div>
       }

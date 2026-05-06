@@ -13,7 +13,9 @@
       "Bash(node -e \"const A = require\\('@anthropic-ai/sdk'\\); console.log\\(typeof A, Object.keys\\(A\\).slice\\(0,10\\)\\)\")",
       "Bash(node -e \"const A = require\\('@anthropic-ai/sdk'\\); console.log\\('typeof:', typeof A, '/ has Anthropic key:', 'Anthropic' in A\\); const C = A.Anthropic || A.default || A; console.log\\('constructor name:', C.name\\); const c = new C\\({ apiKey: 'sk-test' }\\); console.log\\('client class:', c.constructor.name, '/ has messages:', typeof c.messages\\)\")",
       "Bash(node -e ' *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(git ls-tree *)",
+      "Bash(git -c core.autocrlf=false commit -m \"Remove NEW badges from Generate with AI and Ask Pulse buttons\")"
     ]
   }
 }
