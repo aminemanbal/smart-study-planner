@@ -42,8 +42,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  // Merge fresh fields into the cached user (called after profile updates)
+  const updateUser = (patch) => {
+    setUser(prev => prev ? { ...prev, ...patch } : prev)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,8 +1,8 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   IconDashboard, IconBook, IconCalendar, IconCheck, IconChart,
-  IconLogout, IconLogo, IconClose, IconSpark
+  IconLogout, IconLogo, IconClose, IconSpark, IconUser
 } from './Icons'
 
 const links = [
@@ -11,14 +11,18 @@ const links = [
   { to: '/exams',     label: 'Exams',     Icon: IconCalendar },
   { to: '/tasks',     label: 'Tasks',     Icon: IconCheck },
   { to: '/progress',  label: 'Progress',  Icon: IconChart },
+  { to: '/profile',   label: 'Profile',   Icon: IconUser },
 ]
 
 export default function Sidebar({ open, onClose, onOpenChat }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const initials = user?.name
     ? user.name.split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase()
     : '·'
+
+  const accent = user?.accentColor || '#6366F1'
 
   return (
     <>
@@ -99,17 +103,35 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
         </nav>
 
         <div className="px-4 py-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 p-2 rounded-xl">
-            <div className="w-10 h-10 rounded-full bg-brand-gradient text-white flex items-center justify-center text-sm font-bold shadow-glow">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0 leading-tight">
-              <p className="text-sm font-semibold text-slate-800 truncate">{user?.name || 'Student'}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-            </div>
+          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group">
             <button
-              onClick={logout}
-              className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+              onClick={() => { onClose?.(); navigate('/profile') }}
+              className="flex items-center gap-3 flex-1 min-w-0 text-left"
+              title="View profile"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full object-cover ring-2 shrink-0"
+                  style={{ '--tw-ring-color': accent, ringColor: accent }}
+                />
+              ) : (
+                <div
+                  className="w-10 h-10 rounded-full text-white flex items-center justify-center text-sm font-bold shadow-glow shrink-0"
+                  style={{ background: `linear-gradient(135deg, ${accent}, ${shade(accent, -30)})` }}
+                >
+                  {initials}
+                </div>
+              )}
+              <div className="flex-1 min-w-0 leading-tight">
+                <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-700 transition-colors">{user?.name || 'Student'}</p>
+                <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+              </div>
+            </button>
+            <button
+              onClick={() => { logout(); navigate('/login') }}
+              className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors shrink-0"
               aria-label="Log out"
               title="Log out"
             >
@@ -120,4 +142,16 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
       </aside>
     </>
   )
+}
+
+function shade (hex, percent) {
+  const c = (hex || '#6366F1').replace('#', '')
+  const num = parseInt(c.length === 3 ? c.split('').map(x => x + x).join('') : c, 16)
+  let r = (num >> 16) + percent
+  let g = ((num >> 8) & 0xff) + percent
+  let b = (num & 0xff) + percent
+  r = Math.max(0, Math.min(255, r))
+  g = Math.max(0, Math.min(255, g))
+  b = Math.max(0, Math.min(255, b))
+  return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()
 }

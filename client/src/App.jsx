@@ -7,6 +7,7 @@ import Subjects from './pages/Subjects'
 import Exams from './pages/Exams'
 import Tasks from './pages/Tasks'
 import Progress from './pages/Progress'
+import Profile from './pages/Profile'
 
 const Loader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Route path="/exams"     element={<Protected><Exams /></Protected>} />
       <Route path="/tasks"     element={<Protected><Tasks /></Protected>} />
       <Route path="/progress"  element={<Protected><Progress /></Protected>} />
+      <Route path="/profile"   element={<Protected><Profile /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
