@@ -4,9 +4,9 @@ import { IconPlus, IconTrash, IconBook } from '../components/Icons'
 import * as subjectService from '../services/subjectService'
 
 const diffStyle = {
-  easy:   'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
-  medium: 'bg-amber-50   text-amber-700   ring-1 ring-amber-100',
-  hard:   'bg-rose-50    text-rose-700    ring-1 ring-rose-100',
+  easy:   'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-900/50',
+  medium: 'bg-amber-50   text-amber-700   ring-1 ring-amber-100   dark:bg-amber-900/30   dark:text-amber-300   dark:ring-amber-900/50',
+  hard:   'bg-rose-50    text-rose-700    ring-1 ring-rose-100    dark:bg-rose-900/30    dark:text-rose-300    dark:ring-rose-900/50',
 }
 
 const colorPresets = ['#6366F1', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#0EA5E9', '#14B8A6']
@@ -122,8 +122,8 @@ export default function Subjects() {
           <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-soft flex items-center justify-center text-brand-600">
             <IconBook className="w-7 h-7" />
           </div>
-          <h3 className="font-display font-bold text-slate-900 mt-4">No subjects yet</h3>
-          <p className="text-sm text-slate-500 mt-1">Add your first subject to start building a study plan.</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100 mt-4">No subjects yet</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Add your first subject to start building a study plan.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary mt-6">
             <IconPlus className="w-4 h-4" /> Add subject
           </button>
@@ -145,7 +145,7 @@ export default function Subjects() {
                     {s.name[0]?.toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-slate-800 truncate">{s.name}</p>
+                    <p className="font-semibold text-slate-800 dark:text-slate-100 truncate">{s.name}</p>
                     <span className={`pill ${diffStyle[s.difficultyLevel]} capitalize mt-1.5`}>
                       {s.difficultyLevel}
                     </span>

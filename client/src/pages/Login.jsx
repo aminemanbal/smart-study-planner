@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-white">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white dark:bg-slate-950">
       {/* Hero / brand panel */}
       <div className="relative hidden lg:flex flex-col justify-between p-12 bg-brand-gradient text-white overflow-hidden">
         <div className="absolute inset-0 bg-mesh opacity-60" />
@@ -69,11 +69,11 @@ export default function Login() {
         <div className="w-full max-w-md animate-fade-in">
           <div className="lg:hidden flex items-center gap-2 mb-10">
             <IconLogo className="w-9 h-9" />
-            <span className="font-display font-bold text-slate-900 text-lg">Study Planner</span>
+            <span className="font-display font-bold text-slate-900 dark:text-slate-100 text-lg">Study Planner</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
-          <p className="text-slate-500 mt-1.5">Sign in to continue your study plan.</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome back</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1.5">Sign in to continue your study plan.</p>
 
           {error && (
             <div className="mt-6 bg-rose-50 border border-rose-100 text-rose-700 text-sm px-4 py-3 rounded-xl animate-fade-in">
@@ -111,9 +111,9 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="mt-8 text-sm text-center text-slate-500">
+          <p className="mt-8 text-sm text-center text-slate-500 dark:text-slate-400">
             Don't have an account?{' '}
-            <Link to="/register" className="text-brand-600 font-semibold hover:underline">
+            <Link to="/register" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
               Create one
             </Link>
           </p>

@@ -11,9 +11,9 @@ const StatTile = ({ label, value, accent, icon: Icon, hint }) => (
   <div className="card card-hover p-5 relative overflow-hidden">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs text-slate-400 uppercase tracking-wide font-semibold">{label}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-500 uppercase tracking-wide font-semibold">{label}</p>
         <p className={`text-3xl font-extrabold mt-2 ${accent}`}>{value}</p>
-        {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
+        {hint && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{hint}</p>}
       </div>
       {Icon && (
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${accent} bg-opacity-10`}>
@@ -67,21 +67,21 @@ export default function Progress() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="card p-6 lg:col-span-2">
-          <h3 className="font-display font-bold text-slate-900">Completion by Subject</h3>
-          <p className="text-xs text-slate-400 mt-0.5 mb-5">Per-subject completion rate</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Completion by Subject</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-500 mt-0.5 mb-5">Per-subject completion rate</p>
           <PerSubjectChart data={subjects} />
         </div>
 
         <div className="card p-6 flex flex-col items-center text-center">
-          <h3 className="font-display font-bold text-slate-900">Overall Progress</h3>
-          <p className="text-xs text-slate-400 mt-0.5 mb-5">Tasks done vs. total</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Overall Progress</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-500 mt-0.5 mb-5">Tasks done vs. total</p>
           <OverallRing value={summary?.overall || 0} />
         </div>
       </div>
 
       <div className="card p-6 mb-6">
-        <h3 className="font-display font-bold text-slate-900">Activity — Last 7 Days</h3>
-        <p className="text-xs text-slate-400 mt-0.5 mb-5">Tasks completed per day</p>
+        <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Activity — Last 7 Days</h3>
+        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-500 mt-0.5 mb-5">Tasks completed per day</p>
         <ResponsiveContainer width="100%" height={260}>
           <AreaChart data={summary?.last7 || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
@@ -104,8 +104,8 @@ export default function Progress() {
       </div>
 
       <div className="card p-6">
-        <h3 className="font-display font-bold text-slate-900">Subject Breakdown</h3>
-        <p className="text-xs text-slate-400 mt-0.5 mb-6">Granular completion per subject</p>
+        <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Subject Breakdown</h3>
+        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-500 mt-0.5 mb-6">Granular completion per subject</p>
         {subjects.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-6">
             No data yet — generate a study plan to start tracking progress.
@@ -123,8 +123,8 @@ export default function Progress() {
                       {s.subject.name[0]?.toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">{s.subject.name}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{s.subject.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
                         {s.completedTasks}/{s.totalTasks} tasks
                         {s.missedTasks > 0 && (
                           <span className="text-rose-500 ml-2">· {s.missedTasks} missed</span>
@@ -134,7 +134,7 @@ export default function Progress() {
                   </div>
                   <span className="text-sm font-bold text-slate-700">{s.completionRate}%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div
                     className="h-2 rounded-full transition-all duration-700"
                     style={{ width: `${s.completionRate}%`, backgroundColor: s.subject.color }}

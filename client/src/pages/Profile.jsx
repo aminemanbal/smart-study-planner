@@ -45,8 +45,8 @@ const resizeToDataURL = (file, size = 320, quality = 0.85) => new Promise((resol
 const Badge = ({ icon: Icon, label, hint, unlocked, color = '#6366F1' }) => (
   <div className={`p-4 rounded-2xl border text-center transition-all ${
     unlocked
-      ? 'bg-white border-slate-100 shadow-soft'
-      : 'bg-slate-50 border-slate-100 opacity-50 grayscale'
+      ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-soft'
+      : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 opacity-50 grayscale'
   }`}>
     <div
       className="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-white shadow-glow"
@@ -54,8 +54,8 @@ const Badge = ({ icon: Icon, label, hint, unlocked, color = '#6366F1' }) => (
     >
       <Icon className="w-6 h-6" />
     </div>
-    <p className="font-semibold text-sm text-slate-800 mt-2">{label}</p>
-    <p className="text-[10px] text-slate-400 mt-0.5">{hint}</p>
+    <p className="font-semibold text-sm text-slate-800 dark:text-slate-200 mt-2">{label}</p>
+    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{hint}</p>
   </div>
 )
 
@@ -269,11 +269,11 @@ export default function Profile() {
                   placeholder="Your name"
                 />
               ) : (
-                <h2 className="text-2xl font-extrabold text-slate-900 truncate">{user?.name}</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 truncate">{user?.name}</h2>
               )}
-              <p className="text-sm text-slate-500 truncate">{user?.email}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
               {memberSince && (
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                   Member since {memberSince.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </p>
               )}
@@ -296,9 +296,9 @@ export default function Profile() {
                 <p className="text-[10px] text-slate-400 mt-1 text-right">{form.bio.length}/240</p>
               </>
             ) : user?.bio ? (
-              <p className="text-sm text-slate-700 leading-relaxed">{user.bio}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{user.bio}</p>
             ) : (
-              <p className="text-sm text-slate-400 italic">No bio yet — click Edit to add one.</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic">No bio yet — click Edit to add one.</p>
             )}
           </div>
 
@@ -326,8 +326,8 @@ export default function Profile() {
       {/* STATS + GOAL ----------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="card p-6 lg:col-span-2">
-          <h3 className="font-display font-bold text-slate-900">Your stats</h3>
-          <p className="text-xs text-slate-400 mt-0.5 mb-5">A snapshot of your journey so far.</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Your stats</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 mb-5">A snapshot of your journey so far.</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Subjects',  value: stats.subjects,           hint: 'Tracked' },
@@ -361,7 +361,7 @@ export default function Profile() {
               >
                 <IconSpark className="w-4 h-4" />
               </span>
-              <h3 className="font-display font-bold text-slate-900">My goal</h3>
+              <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">My goal</h3>
             </div>
             {editing ? (
               <>
@@ -388,13 +388,13 @@ export default function Profile() {
               </>
             ) : user?.goal ? (
               <>
-                <p className="text-sm text-slate-700 leading-relaxed italic">"{user.goal}"</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">"{user.goal}"</p>
                 {user.dailyStudyHours > 0 && (
                   <p className="text-xs text-slate-400 mt-3">Target: {user.dailyStudyHours}h / day</p>
                 )}
               </>
             ) : (
-              <p className="text-sm text-slate-400 italic">Set a goal to stay motivated.</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic">Set a goal to stay motivated.</p>
             )}
           </div>
         </div>
@@ -403,8 +403,8 @@ export default function Profile() {
       {/* ACCENT COLOR ----------------------------------------------- */}
       {editing && (
         <div className="card p-6 mb-6 animate-fade-in">
-          <h3 className="font-display font-bold text-slate-900">Accent color</h3>
-          <p className="text-xs text-slate-400 mt-0.5 mb-4">Personalise your profile gradient.</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Accent color</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 mb-4">Personalise your profile gradient.</p>
           <div className="flex items-center gap-3 flex-wrap">
             {PRESET_COLORS.map(c => (
               <button
@@ -433,8 +433,8 @@ export default function Profile() {
       <div className="card p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="font-display font-bold text-slate-900">Achievements</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h3 className="font-display font-bold text-slate-900 dark:text-slate-100">Achievements</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               {achievements.filter(a => a.unlocked).length} / {achievements.length} unlocked
             </p>
           </div>

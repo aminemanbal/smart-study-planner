@@ -1,7 +1,7 @@
 const priorityStyle = {
-  low:    'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
-  medium: 'bg-amber-50   text-amber-700   ring-1 ring-amber-100',
-  high:   'bg-rose-50    text-rose-700    ring-1 ring-rose-100',
+  low:    'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-900/50',
+  medium: 'bg-amber-50   text-amber-700   ring-1 ring-amber-100   dark:bg-amber-900/30   dark:text-amber-300   dark:ring-amber-900/50',
+  high:   'bg-rose-50    text-rose-700    ring-1 ring-rose-100    dark:bg-rose-900/30    dark:text-rose-300    dark:ring-rose-900/50',
 }
 
 const daysBetween = (date) => {
@@ -16,8 +16,11 @@ export default function ExamCountdown({ exam, onDelete }) {
   const soon = days <= 7
   const color = exam.subjectId?.color || '#6366F1'
 
-  const ringColor = urgent ? 'ring-rose-200' : soon ? 'ring-amber-200' : 'ring-slate-100'
-  const dayColor = urgent ? 'text-rose-500' : soon ? 'text-amber-500' : 'text-slate-700'
+  const ringColor = urgent
+    ? 'ring-rose-200 dark:ring-rose-900/50'
+    : soon ? 'ring-amber-200 dark:ring-amber-900/50'
+           : 'ring-slate-100 dark:ring-slate-800'
+  const dayColor = urgent ? 'text-rose-500' : soon ? 'text-amber-500' : 'text-slate-700 dark:text-slate-200'
 
   return (
     <div className={`relative card card-hover p-4 ring-1 ${ringColor}`}>
@@ -30,10 +33,10 @@ export default function ExamCountdown({ exam, onDelete }) {
             {(exam.subjectId?.name || '·')[0]?.toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
               {exam.subjectId?.name || 'Subject'}
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {new Date(exam.examDate).toLocaleDateString('en-US', {
                 weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
               })}
@@ -43,7 +46,7 @@ export default function ExamCountdown({ exam, onDelete }) {
 
         <div className="text-right shrink-0">
           <p className={`text-2xl font-extrabold leading-none ${dayColor}`}>{days}</p>
-          <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
             {days === 1 ? 'day' : 'days'} left
           </p>
         </div>
@@ -56,7 +59,7 @@ export default function ExamCountdown({ exam, onDelete }) {
         {onDelete && (
           <button
             onClick={() => onDelete(exam._id)}
-            className="text-xs text-slate-300 hover:text-rose-500 transition-colors"
+            className="text-xs text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
             title="Delete exam"
           >
             Remove

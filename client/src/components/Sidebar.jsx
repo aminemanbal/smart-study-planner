@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from './ThemeToggle'
 import {
   IconDashboard, IconBook, IconCalendar, IconCheck, IconChart,
   IconLogout, IconLogo, IconClose, IconSpark, IconUser, IconAcademic
@@ -41,23 +42,23 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
         className={`
           fixed lg:sticky top-0 left-0 z-50 lg:z-0
           h-screen w-72 shrink-0
-          bg-white border-r border-slate-100
+          bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800
           flex flex-col
           transition-transform duration-200
           ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         `}
       >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <IconLogo className="w-9 h-9" />
             <div className="leading-tight">
-              <p className="font-display font-bold text-slate-900">Study Planner</p>
-              <p className="text-[11px] text-slate-400 tracking-wide uppercase">Smart Edition</p>
+              <p className="font-display font-bold text-slate-900 dark:text-slate-100">Study Planner</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 tracking-wide uppercase">Smart Edition</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden text-slate-400 hover:text-slate-700 transition-colors p-1"
+            className="lg:hidden text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1"
             aria-label="Close menu"
           >
             <IconClose className="w-5 h-5" />
@@ -75,14 +76,14 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-brand-50 text-brand-700 shadow-soft'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-soft'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600' : ''}`} />
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600 dark:text-brand-400' : ''}`} />
                       {label}
                       {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-500" />}
                     </>
@@ -102,14 +103,14 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-brand-50 text-brand-700 shadow-soft'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                        ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-soft'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600' : ''}`} />
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600 dark:text-brand-400' : ''}`} />
                       {label}
                       {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-500" />}
                     </>
@@ -127,10 +128,15 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
               Ask Pulse
             </button>
           )}
+
+          <div className="mt-7 px-3 flex items-center justify-between">
+            <span className="section-title">Theme</span>
+            <ThemeToggle />
+          </div>
         </nav>
 
-        <div className="px-4 py-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors group">
+        <div className="px-4 py-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
             <button
               onClick={() => { onClose?.(); navigate('/profile') }}
               className="flex items-center gap-3 flex-1 min-w-0 text-left"
@@ -152,13 +158,13 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
                 </div>
               )}
               <div className="flex-1 min-w-0 leading-tight">
-                <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-700 transition-colors">{user?.name || 'Student'}</p>
-                <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">{user?.name || 'Student'}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{user?.email}</p>
               </div>
             </button>
             <button
               onClick={() => { logout(); navigate('/login') }}
-              className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors shrink-0"
+              className="text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors shrink-0"
               aria-label="Log out"
               title="Log out"
             >

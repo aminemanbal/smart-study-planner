@@ -58,19 +58,19 @@ const STARTER_PROMPTS = [
 
 const Markdown = ({ children }) => (
   <div className="
-    prose prose-sm prose-slate max-w-none
-    prose-headings:font-display prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-2
+    prose prose-sm prose-slate dark:prose-invert max-w-none
+    prose-headings:font-display prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-headings:mt-4 prose-headings:mb-2
     prose-h1:text-base prose-h2:text-base prose-h3:text-sm
-    prose-p:my-2 prose-p:leading-relaxed
-    prose-strong:text-slate-900 prose-strong:font-semibold
-    prose-em:text-slate-700
+    prose-p:my-2 prose-p:leading-relaxed prose-p:text-slate-700 dark:prose-p:text-slate-300
+    prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-strong:font-semibold
+    prose-em:text-slate-700 dark:prose-em:text-slate-300
     prose-code:before:content-none prose-code:after:content-none
-    prose-code:bg-slate-100 prose-code:text-brand-700 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.85em] prose-code:font-medium
-    prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-3 prose-pre:text-[0.85em] prose-pre:shadow-soft
-    prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5
-    prose-blockquote:border-l-brand-300 prose-blockquote:bg-brand-50/40 prose-blockquote:px-4 prose-blockquote:py-2 prose-blockquote:not-italic prose-blockquote:text-slate-700
-    prose-a:text-brand-600 prose-a:no-underline hover:prose-a:underline
-    prose-hr:border-slate-200
+    prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:text-brand-700 dark:prose-code:text-brand-300 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.85em] prose-code:font-medium
+    prose-pre:bg-slate-900 dark:prose-pre:bg-slate-950 dark:prose-pre:border dark:prose-pre:border-slate-800 prose-pre:text-slate-100 prose-pre:rounded-xl prose-pre:p-4 prose-pre:my-3 prose-pre:text-[0.85em] prose-pre:shadow-soft
+    prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-li:text-slate-700 dark:prose-li:text-slate-300
+    prose-blockquote:border-l-brand-300 prose-blockquote:bg-brand-50/40 dark:prose-blockquote:bg-brand-900/20 prose-blockquote:px-4 prose-blockquote:py-2 prose-blockquote:not-italic prose-blockquote:text-slate-700 dark:prose-blockquote:text-slate-300
+    prose-a:text-brand-600 dark:prose-a:text-brand-400 prose-a:no-underline hover:prose-a:underline
+    prose-hr:border-slate-200 dark:prose-hr:border-slate-800
     prose-table:text-sm
   ">
     <ReactMarkdown remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown>
@@ -292,12 +292,12 @@ export default function Tutor() {
   /* ------------------------------ RENDER ------------------------------ */
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
       <Sidebar open={navOpen} onClose={() => setNavOpen(false)} onOpenChat={() => setChatOpen(true)} />
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* MOBILE TOP BAR */}
-        <header className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+        <header className="lg:hidden sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-100 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setNavOpen(true)}
             className="text-slate-600 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100"
@@ -330,17 +330,17 @@ export default function Tutor() {
             className={`
               fixed lg:relative top-0 left-0 z-50 lg:z-0
               h-screen lg:h-auto w-80 lg:w-72
-              bg-white lg:rounded-2xl
-              border-r lg:border lg:border-slate-100 border-slate-100 lg:shadow-soft
+              bg-white dark:bg-slate-900 lg:rounded-2xl
+              border-r lg:border lg:border-slate-100 border-slate-100 dark:border-slate-800 dark:lg:border-slate-800 lg:shadow-soft
               flex flex-col
               transition-transform duration-200
               ${convoOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
             `}
           >
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
-                <h2 className="font-display font-bold text-slate-900 text-sm">Conversations</h2>
-                <p className="text-[11px] text-slate-400">{conversations.length} saved</p>
+                <h2 className="font-display font-bold text-slate-900 dark:text-slate-100 text-sm">Conversations</h2>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">{conversations.length} saved</p>
               </div>
               <button
                 onClick={() => setConvoOpen(false)}
@@ -362,13 +362,13 @@ export default function Tutor() {
 
             <div className="flex-1 overflow-y-auto scroll-thin px-2 pb-3">
               {conversations.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-8 px-3">
+                <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8 px-3">
                   No conversations yet. Ask your first question to get started.
                 </p>
               ) : (
                 grouped.map(([period, items]) => (
                   <div key={period} className="mt-3 first:mt-0">
-                    <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{period}</p>
+                    <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{period}</p>
                     {items.map(c => (
                       <button
                         key={c._id}
@@ -376,11 +376,11 @@ export default function Tutor() {
                         className={`
                           group w-full text-left px-3 py-2.5 rounded-xl transition-all relative
                           ${activeId === c._id
-                            ? 'bg-brand-50 ring-1 ring-brand-100'
-                            : 'hover:bg-slate-50'}
+                            ? 'bg-brand-50 dark:bg-brand-900/30 ring-1 ring-brand-100 dark:ring-brand-800'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800'}
                         `}
                       >
-                        <p className={`text-sm font-medium truncate ${activeId === c._id ? 'text-brand-700' : 'text-slate-800'}`}>
+                        <p className={`text-sm font-medium truncate ${activeId === c._id ? 'text-brand-700 dark:text-brand-300' : 'text-slate-800 dark:text-slate-200'}`}>
                           {c.title}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -392,7 +392,7 @@ export default function Tutor() {
                               {c.subjectId.name}
                             </span>
                           )}
-                          <span className="text-[10px] text-slate-400">{formatRelative(c.updatedAt)}</span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatRelative(c.updatedAt)}</span>
                         </div>
                         <span
                           role="button"
@@ -411,9 +411,9 @@ export default function Tutor() {
           </aside>
 
           {/* CHAT AREA */}
-          <main className="flex-1 min-w-0 flex flex-col lg:rounded-2xl bg-white lg:shadow-soft lg:border lg:border-slate-100 overflow-hidden">
+          <main className="flex-1 min-w-0 flex flex-col lg:rounded-2xl bg-white dark:bg-slate-900 lg:shadow-soft lg:border lg:border-slate-100 dark:lg:border-slate-800 overflow-hidden">
             {/* HEADER */}
-            <div className="px-5 lg:px-7 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <div className="px-5 lg:px-7 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center text-white shadow-glow shrink-0">
                   <IconAcademic className="w-5 h-5" />
@@ -441,13 +441,13 @@ export default function Tutor() {
                       className="flex items-center gap-1.5 group text-left max-w-full"
                       disabled={!active}
                     >
-                      <h1 className="font-display font-bold text-slate-900 truncate">
+                      <h1 className="font-display font-bold text-slate-900 dark:text-slate-100 truncate">
                         {active ? active.title : 'AI Tutor'}
                       </h1>
                       {active && <IconEdit className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors shrink-0" />}
                     </button>
                   )}
-                  <p className="text-xs text-slate-400 truncate">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
                     {active ? `${active.messages.length} message${active.messages.length !== 1 ? 's' : ''}` : 'Ask anything about your subjects.'}
                   </p>
                 </div>
@@ -460,12 +460,12 @@ export default function Tutor() {
                     value={subjectId}
                     onChange={e => setSubjectId(e.target.value)}
                     disabled={streaming}
-                    className="appearance-none text-xs font-semibold pl-3 pr-7 py-1.5 rounded-full border border-slate-200 bg-white hover:border-brand-300 focus:outline-none focus:ring-4 focus:ring-brand-100 transition-all cursor-pointer text-slate-600"
+                    className="appearance-none text-xs font-semibold pl-3 pr-7 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand-300 dark:hover:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-all cursor-pointer text-slate-600 dark:text-slate-300"
                   >
                     <option value="">No subject context</option>
                     {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                   </select>
-                  <IconChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  <IconChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500" />
                 </div>
                 <button
                   onClick={newConvo}
@@ -479,7 +479,7 @@ export default function Tutor() {
             </div>
 
             {/* MESSAGES */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-thin px-4 lg:px-7 py-6 bg-gradient-to-b from-white to-slate-50">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-thin px-4 lg:px-7 py-6 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950">
               {error && (
                 <div className="mb-4 bg-rose-50 border border-rose-100 text-rose-700 text-sm px-4 py-3 rounded-xl">{error}</div>
               )}
@@ -501,11 +501,11 @@ export default function Tutor() {
             </div>
 
             {/* COMPOSER */}
-            <div className="border-t border-slate-100 px-4 lg:px-7 py-4 bg-white">
+            <div className="border-t border-slate-100 dark:border-slate-800 px-4 lg:px-7 py-4 bg-white dark:bg-slate-900">
               <div className="max-w-3xl mx-auto">
                 {activeSubject && (
                   <div className="mb-2 flex items-center gap-2 text-xs">
-                    <span className="text-slate-500">Context:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Context:</span>
                     <span
                       className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full text-white"
                       style={{ backgroundColor: activeSubject.color || '#6366F1' }}
@@ -530,7 +530,7 @@ export default function Tutor() {
                     rows={1}
                     disabled={streaming}
                     placeholder="Ask anything — concepts, problems, quizzes, summaries…"
-                    className="w-full resize-none rounded-2xl border border-slate-200 pl-4 pr-14 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 focus:border-brand-400 max-h-40 disabled:bg-slate-50 transition-all shadow-soft"
+                    className="w-full resize-none rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-slate-100 pl-4 pr-14 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/40 focus:border-brand-400 max-h-40 disabled:bg-slate-50 dark:disabled:bg-slate-900 transition-all shadow-soft placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                   {streaming ? (
                     <button
@@ -555,7 +555,7 @@ export default function Tutor() {
 
                 {/* Quick action chips */}
                 <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Quick:</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Quick:</span>
                   {QUICK_ACTIONS.map(qa => (
                     <button
                       key={qa.label}
@@ -566,14 +566,14 @@ export default function Tutor() {
                         inputRef.current?.focus()
                       }}
                       disabled={streaming}
-                      className="text-xs px-2.5 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-600 font-medium transition-colors disabled:opacity-50"
+                      className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-brand-900/30 hover:text-brand-700 dark:hover:text-brand-300 text-slate-600 dark:text-slate-300 font-medium transition-colors disabled:opacity-50"
                     >
                       {qa.label}
                     </button>
                   ))}
                 </div>
 
-                <p className="mt-2 text-center text-[10px] text-slate-400">
+                <p className="mt-2 text-center text-[10px] text-slate-400 dark:text-slate-500">
                   Powered by Llama 3.3 — answers can be wrong, verify important facts.
                 </p>
               </div>
@@ -605,7 +605,7 @@ function Bubble({ role, content, streaming }) {
         <IconAcademic className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0 group">
-        <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-md border border-slate-100 shadow-soft">
+        <div className="bg-white dark:bg-slate-800 px-5 py-4 rounded-2xl rounded-tl-md border border-slate-100 dark:border-slate-700 shadow-soft">
           {content ? (
             <>
               <Markdown>{content}</Markdown>
@@ -633,10 +633,10 @@ function WelcomeState({ onPick, userName }) {
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-brand-gradient shadow-glow mb-5">
         <IconAcademic className="w-8 h-8 text-white" />
       </div>
-      <h2 className="text-3xl font-bold text-slate-900">
+      <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
         Hi{userName ? `, ${userName.split(' ')[0]}` : ''} — what should we study today?
       </h2>
-      <p className="text-slate-500 mt-2">
+      <p className="text-slate-500 dark:text-slate-400 mt-2">
         Ask anything. I can explain concepts, solve problems, quiz you, or summarise a topic.
       </p>
 
@@ -645,18 +645,18 @@ function WelcomeState({ onPick, userName }) {
           <button
             key={i}
             onClick={() => onPick(s.prompt)}
-            className="text-left p-4 rounded-2xl border border-slate-100 bg-white hover:border-brand-200 hover:bg-brand-50/30 hover:shadow-soft transition-all group"
+            className="text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-brand-200 dark:hover:border-brand-700 hover:bg-brand-50/30 dark:hover:bg-brand-900/20 hover:shadow-soft transition-all group"
           >
             <div className="text-2xl mb-2">{s.emoji}</div>
-            <p className="text-sm font-semibold text-slate-800 group-hover:text-brand-700 transition-colors">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
               {s.title}
             </p>
-            <p className="text-xs text-slate-500 mt-1 line-clamp-2">{s.prompt}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{s.prompt}</p>
           </button>
         ))}
       </div>
 
-      <div className="mt-10 flex items-center justify-center gap-2 text-xs text-slate-400">
+      <div className="mt-10 flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500">
         <IconSpark className="w-4 h-4" />
         Pick a subject in the top right for tailored answers
       </div>

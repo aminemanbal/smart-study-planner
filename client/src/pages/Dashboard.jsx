@@ -20,19 +20,19 @@ const StatCard = ({ icon: Icon, label, value, gradient, hint }) => (
         <Icon className="w-5 h-5" />
       </div>
       <div>
-        <p className="text-2xl font-extrabold text-slate-900">{value}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-        {hint && <p className="text-[10px] text-slate-400 mt-1">{hint}</p>}
+        <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{value}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>
+        {hint && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{hint}</p>}
       </div>
     </div>
   </div>
 )
 
 const toneStyle = {
-  info:    'bg-brand-50    text-brand-700    border-brand-100',
-  warn:    'bg-amber-50    text-amber-800    border-amber-100',
-  danger:  'bg-rose-50     text-rose-700     border-rose-100',
-  success: 'bg-emerald-50  text-emerald-700  border-emerald-100',
+  info:    'bg-brand-50    text-brand-700    border-brand-100   dark:bg-brand-900/30   dark:text-brand-300   dark:border-brand-800',
+  warn:    'bg-amber-50    text-amber-800    border-amber-100   dark:bg-amber-900/30   dark:text-amber-300   dark:border-amber-800',
+  danger:  'bg-rose-50     text-rose-700     border-rose-100    dark:bg-rose-900/30    dark:text-rose-300    dark:border-rose-800',
+  success: 'bg-emerald-50  text-emerald-700  border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
 }
 
 const fallbackSuggestions = (summary, exams, todayTasks, subjects, daysLeft) => {
@@ -156,15 +156,15 @@ export default function Dashboard() {
         <div className="card p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="font-display font-bold text-slate-900">Today's Tasks</h2>
-              <p className="text-xs text-slate-400 mt-0.5">{todayTasks.length} task{todayTasks.length !== 1 ? 's' : ''} for {today.toLocaleDateString('en-US', { weekday: 'long' })}</p>
+              <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">Today's Tasks</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{todayTasks.length} task{todayTasks.length !== 1 ? 's' : ''} for {today.toLocaleDateString('en-US', { weekday: 'long' })}</p>
             </div>
-            <Link to="/tasks" className="text-xs font-semibold text-brand-600 hover:text-brand-700">View all →</Link>
+            <Link to="/tasks" className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300">View all →</Link>
           </div>
           {todayTasks.length === 0 ? (
-            <div className="text-center py-10 px-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
-              <p className="text-sm font-medium text-slate-600">Nothing planned for today.</p>
-              <p className="text-xs text-slate-400 mt-1">Generate a study plan to get started.</p>
+            <div className="text-center py-10 px-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Nothing planned for today.</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Generate a study plan to get started.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -176,8 +176,8 @@ export default function Dashboard() {
         </div>
 
         <div className="card p-6 flex flex-col items-center text-center">
-          <h2 className="font-display font-bold text-slate-900">Overall Progress</h2>
-          <p className="text-xs text-slate-400 mt-0.5 mb-5">Across all subjects</p>
+          <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">Overall Progress</h2>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 mb-5">Across all subjects</p>
           <OverallRing value={summary?.overall || 0} />
           <Link to="/progress" className="mt-5 btn-secondary px-4 py-2 text-xs">
             View detailed report
@@ -189,15 +189,15 @@ export default function Dashboard() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="font-display font-bold text-slate-900">Exam Countdown</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Next {Math.min(upcomingExams.length, 4)} upcoming exam(s)</p>
+              <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">Exam Countdown</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Next {Math.min(upcomingExams.length, 4)} upcoming exam(s)</p>
             </div>
-            <Link to="/exams" className="text-xs font-semibold text-brand-600 hover:text-brand-700">Manage →</Link>
+            <Link to="/exams" className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300">Manage →</Link>
           </div>
           {upcomingExams.length === 0 ? (
-            <div className="text-center py-10 px-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
-              <p className="text-sm font-medium text-slate-600">No upcoming exams</p>
-              <p className="text-xs text-slate-400 mt-1">Schedule an exam to start planning.</p>
+            <div className="text-center py-10 px-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No upcoming exams</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Schedule an exam to start planning.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -214,7 +214,7 @@ export default function Dashboard() {
                 <IconSpark className="w-4 h-4" />
               </span>
               <div>
-                <h2 className="font-display font-bold text-slate-900">AI Suggestions</h2>
+                <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">AI Suggestions</h2>
                 <p className="text-xs text-slate-400">
                   {aiLoading ? 'Pulse is thinking…' : aiSuggestions ? 'Powered by Claude' : aiError ? 'Showing offline tips' : 'Heuristic tips'}
                 </p>
@@ -255,11 +255,11 @@ export default function Dashboard() {
       <div className="card p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-display font-bold text-slate-900">Next 14 Days</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Daily task density across upcoming days</p>
+            <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">Next 14 Days</h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Daily task density across upcoming days</p>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-slate-400">
-            <span className="w-2.5 h-2.5 rounded bg-slate-100" /> 0
+            <span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-slate-800" /> 0
             <span className="w-2.5 h-2.5 rounded bg-brand-100" /> 1–2
             <span className="w-2.5 h-2.5 rounded bg-brand-300" /> 3–4
             <span className="w-2.5 h-2.5 rounded bg-brand-500" /> 5+
@@ -268,9 +268,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map(({ date, count }, i) => {
             const isToday = date.getTime() === today.getTime()
-            const intensity = count === 0 ? 'bg-slate-50 text-slate-400' :
-                              count < 3  ? 'bg-brand-100 text-brand-700' :
-                              count < 5  ? 'bg-brand-300 text-white' :
+            const intensity = count === 0 ? 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500' :
+                              count < 3  ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300' :
+                              count < 5  ? 'bg-brand-300 dark:bg-brand-700 text-white' :
                                            'bg-brand-500 text-white'
             return (
               <div

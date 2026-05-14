@@ -146,7 +146,7 @@ export default function ChatPanel({ open, onClose }) {
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-thin px-5 py-5 space-y-4 bg-slate-50">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-thin px-5 py-5 space-y-4 bg-slate-50 dark:bg-slate-900">
           {messages.map((m, i) => <Message key={i} msg={m} streaming={streaming && i === messages.length - 1} />)}
 
           {error && (
@@ -158,12 +158,12 @@ export default function ChatPanel({ open, onClose }) {
 
         {/* Suggested prompts (only when conversation is fresh) */}
         {messages.length <= 1 && !streaming && (
-          <div className="px-5 pt-2 pb-1 flex flex-wrap gap-2 bg-slate-50">
+          <div className="px-5 pt-2 pb-1 flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900">
             {SUGGESTED_PROMPTS.map(p => (
               <button
                 key={p}
                 onClick={() => send(p)}
-                className="text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-700 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
               >
                 {p}
               </button>
@@ -174,7 +174,7 @@ export default function ChatPanel({ open, onClose }) {
         {/* Composer */}
         <form
           onSubmit={(e) => { e.preventDefault(); send() }}
-          className="px-4 py-3 border-t border-slate-100 bg-white"
+          className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950"
         >
           <div className="flex items-end gap-2">
             <textarea
@@ -189,7 +189,7 @@ export default function ChatPanel({ open, onClose }) {
               rows={1}
               disabled={streaming}
               placeholder="Ask me anything…"
-              className="flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 focus:border-brand-400 max-h-32 disabled:bg-slate-50"
+              className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/40 focus:border-brand-400 max-h-32 disabled:bg-slate-50 dark:disabled:bg-slate-900 dark:bg-slate-900"
             />
             {streaming ? (
               <button
@@ -240,7 +240,7 @@ function Message({ msg, streaming }) {
       </div>
       <div className="flex-1 min-w-0">
         {msg.toolCalls?.map((tc, i) => (
-          <div key={i} className="mb-2 inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 mr-2">
+          <div key={i} className="mb-2 inline-flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 mr-2">
             {tc.status === 'running' ? (
               <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
             ) : tc.status === 'error' ? (
@@ -252,12 +252,12 @@ function Message({ msg, streaming }) {
           </div>
         ))}
         {msg.content ? (
-          <div className="bg-white px-4 py-2.5 rounded-2xl text-sm text-slate-700 shadow-soft border border-slate-100 whitespace-pre-wrap leading-relaxed">
+          <div className="bg-white dark:bg-slate-800 px-4 py-2.5 rounded-2xl text-sm text-slate-700 dark:text-slate-200 shadow-soft border border-slate-100 dark:border-slate-700 whitespace-pre-wrap leading-relaxed">
             {msg.content}
             {streaming && <span className="inline-block w-1.5 h-4 bg-brand-500 ml-0.5 align-middle animate-pulse" />}
           </div>
         ) : streaming && (
-          <div className="bg-white px-4 py-3 rounded-2xl shadow-soft border border-slate-100 flex gap-1">
+          <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-700 flex gap-1">
             <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0ms' }} />
             <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '120ms' }} />
             <span className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '240ms' }} />

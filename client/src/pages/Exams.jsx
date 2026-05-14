@@ -64,7 +64,7 @@ export default function Exams() {
       }
     >
       {subjects.length === 0 && (
-        <div className="card p-4 mb-6 bg-amber-50 border-amber-100 text-amber-800 text-sm">
+        <div className="card p-4 mb-6 bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/50 text-amber-800 dark:text-amber-300 text-sm">
           You need to add at least one subject before scheduling exams.
         </div>
       )}
@@ -132,8 +132,8 @@ export default function Exams() {
           <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-soft flex items-center justify-center text-brand-600">
             <IconCalendar className="w-7 h-7" />
           </div>
-          <h3 className="font-display font-bold text-slate-900 mt-4">No exams scheduled</h3>
-          <p className="text-sm text-slate-500 mt-1">Add your first exam so the system can plan around it.</p>
+          <h3 className="font-display font-bold text-slate-900 dark:text-slate-100 mt-4">No exams scheduled</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Add your first exam so the system can plan around it.</p>
         </div>
       ) : (
         <>

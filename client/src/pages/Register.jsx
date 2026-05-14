@@ -33,16 +33,16 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-white">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white dark:bg-slate-950">
       <div className="flex items-center justify-center p-6 sm:p-12 order-2 lg:order-1">
         <div className="w-full max-w-md animate-fade-in">
           <div className="lg:hidden flex items-center gap-2 mb-10">
             <IconLogo className="w-9 h-9" />
-            <span className="font-display font-bold text-slate-900 text-lg">Study Planner</span>
+            <span className="font-display font-bold text-slate-900 dark:text-slate-100 text-lg">Study Planner</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-slate-900">Create your account</h2>
-          <p className="text-slate-500 mt-1.5">Start turning intentions into trackable actions.</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Create your account</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1.5">Start turning intentions into trackable actions.</p>
 
           {error && (
             <div className="mt-6 bg-rose-50 border border-rose-100 text-rose-700 text-sm px-4 py-3 rounded-xl animate-fade-in">
@@ -92,9 +92,9 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="mt-8 text-sm text-center text-slate-500">
+          <p className="mt-8 text-sm text-center text-slate-500 dark:text-slate-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-brand-600 font-semibold hover:underline">
+            <Link to="/login" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
               Sign in
             </Link>
           </p>

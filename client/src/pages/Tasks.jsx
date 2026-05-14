@@ -121,7 +121,7 @@ export default function Tasks() {
       }
     >
       {msg && (
-        <div className="mb-4 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-start gap-2 animate-fade-in">
+        <div className="mb-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-3 rounded-xl flex items-start gap-2 animate-fade-in">
           <IconCheck className="w-4 h-4 mt-0.5 shrink-0" />
           <div>
             <p className="font-medium">{msg}</p>
@@ -130,21 +130,21 @@ export default function Tasks() {
         </div>
       )}
       {error && (
-        <div className="mb-4 bg-rose-50 border border-rose-100 text-rose-700 text-sm px-4 py-3 rounded-xl">
+        <div className="mb-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 text-sm px-4 py-3 rounded-xl">
           {error}
         </div>
       )}
 
       <div className="card p-4 mb-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
-        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setStatusFilter(t.key)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 statusFilter === t.key
-                  ? 'bg-white text-slate-900 shadow-soft'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-soft'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               {t.label}
@@ -183,7 +183,7 @@ export default function Tasks() {
             <section key={date}>
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="section-title">{date}</h3>
-                <div className="flex-1 h-px bg-slate-100" />
+                <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
                 <span className="text-[11px] text-slate-400 font-medium">
                   {dayTasks.length} task{dayTasks.length > 1 ? 's' : ''}
                 </span>

@@ -6,9 +6,9 @@ import {
 const ChartTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white shadow-card rounded-lg border border-slate-100 px-3 py-2">
-      <p className="text-xs font-semibold text-slate-700">{payload[0].payload.name}</p>
-      <p className="text-xs text-brand-600">{payload[0].value}% complete</p>
+    <div className="bg-white dark:bg-slate-800 shadow-card rounded-lg border border-slate-100 dark:border-slate-700 px-3 py-2">
+      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{payload[0].payload.name}</p>
+      <p className="text-xs text-brand-600 dark:text-brand-400">{payload[0].value}% complete</p>
     </div>
   )
 }
@@ -22,7 +22,7 @@ export function PerSubjectChart({ data }) {
 
   if (chartData.length === 0) {
     return (
-      <div className="h-[250px] flex items-center justify-center text-sm text-slate-400">
+      <div className="h-[250px] flex items-center justify-center text-sm text-slate-400 dark:text-slate-500">
         No subjects yet — add your first subject to see progress.
       </div>
     )
