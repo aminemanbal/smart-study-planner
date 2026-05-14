@@ -9,6 +9,8 @@ import {
 import { useAuth } from '../context/AuthContext'
 import * as tutorService from '../services/tutorService'
 import * as subjectService from '../services/subjectService'
+import * as documentsService from '../services/documentsService'
+import { IconDocument, IconUpload } from '../components/Icons'
 
 /* ----------------------------- HELPERS ----------------------------- */
 
@@ -116,6 +118,12 @@ export default function Tutor() {
   const [activeId, setActiveId] = useState(null)
   const [subjects, setSubjects] = useState([])
   const [subjectId, setSubjectId] = useState('')
+  const [documents, setDocuments] = useState([])
+  const [documentId, setDocumentId] = useState('')
+  const [docMenuOpen, setDocMenuOpen] = useState(false)
+  const [uploading, setUploading]   = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const pdfInputRef = useRef(null)
 
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
@@ -131,12 +139,14 @@ export default function Tutor() {
   useEffect(() => {
     (async () => {
       try {
-        const [convos, subs] = await Promise.all([
+        const [convos, subs, docs] = await Promise.all([
           tutorService.listConversations(),
           subjectService.list(),
+          documentsService.list().catch(() => []),
         ])
         setConversations(convos)
         setSubjects(subs)
+        setDocuments(docs)
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load conversations')
       }
@@ -148,13 +158,54 @@ export default function Tutor() {
     if (streaming) return
     setActiveId(id)
     setConvoOpen(false)
-    if (!id) { setActive(null); return }
+    if (!id) { setActive(null); setDocumentId(''); return }
     try {
       const c = await tutorService.getConversation(id)
       setActive(c)
       setSubjectId(c.subjectId?._id || c.subjectId || '')
+      setDocumentId(c.documentId?._id || c.documentId || '')
     } catch (err) {
       setError(err.response?.data?.message || 'Could not load conversation')
+    }
+  }
+
+  /* -------- PDF upload -------- */
+  const onPickPdf = () => pdfInputRef.current?.click()
+
+  const onPdfChange = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-uploading the same file
+    if (!file) return
+    if (file.type !== 'application/pdf') {
+      setError('Only PDF files are supported.')
+      return
+    }
+    setUploading(true)
+    setUploadProgress(0)
+    setError('')
+    try {
+      const doc = await documentsService.upload(file, {
+        subjectId: subjectId || undefined,
+        onProgress: setUploadProgress,
+      })
+      setDocuments(prev => [doc, ...prev])
+      setDocumentId(doc._id)
+      setDocMenuOpen(false)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Upload failed')
+    } finally {
+      setUploading(false); setUploadProgress(0)
+    }
+  }
+
+  const deleteDocument = async (id) => {
+    if (!confirm('Delete this document?')) return
+    try {
+      await documentsService.remove(id)
+      setDocuments(prev => prev.filter(d => d._id !== id))
+      if (documentId === id) setDocumentId('')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not delete')
     }
   }
 
@@ -193,7 +244,7 @@ export default function Tutor() {
 
     try {
       await tutorService.chat(
-        { conversationId: activeId, message: text, subjectId: subjectId || null },
+        { conversationId: activeId, message: text, subjectId: subjectId || null, documentId: documentId || null },
         {
           onMeta: ({ conversationId, title, isNew }) => {
             newConvoId = conversationId
@@ -288,6 +339,7 @@ export default function Tutor() {
   const grouped = useMemo(() => groupByPeriod(conversations), [conversations])
   const messages = active?.messages || []
   const activeSubject = subjects.find(s => s._id === subjectId)
+  const activeDocument = documents.find(d => d._id === documentId)
 
   /* ------------------------------ RENDER ------------------------------ */
 
@@ -453,7 +505,89 @@ export default function Tutor() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* PDF picker */}
+                <input ref={pdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={onPdfChange} />
+                <div className="relative">
+                  <button
+                    onClick={() => setDocMenuOpen(v => !v)}
+                    disabled={streaming || uploading}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold pl-2.5 pr-2 py-1.5 rounded-full border transition-all ${
+                      activeDocument
+                        ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border-brand-200 dark:border-brand-800'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-300 dark:hover:border-brand-600'
+                    }`}
+                    title="Attach a PDF to ground the conversation in its content"
+                  >
+                    <IconDocument className="w-3.5 h-3.5" />
+                    <span className="max-w-[120px] truncate">
+                      {uploading ? `Uploading… ${Math.round(uploadProgress * 100)}%` :
+                       activeDocument ? activeDocument.filename : 'Attach PDF'}
+                    </span>
+                    <IconChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                  {docMenuOpen && (
+                    <>
+                      <div onClick={() => setDocMenuOpen(false)} className="fixed inset-0 z-40" />
+                      <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-card border border-slate-100 dark:border-slate-700 z-50 overflow-hidden">
+                        <button
+                          onClick={() => { onPickPdf(); setDocMenuOpen(false) }}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/20 border-b border-slate-100 dark:border-slate-700 transition-colors"
+                        >
+                          <IconUpload className="w-4 h-4" />
+                          Upload new PDF
+                        </button>
+                        {documentId && (
+                          <button
+                            onClick={() => { setDocumentId(''); setDocMenuOpen(false) }}
+                            className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700 transition-colors"
+                          >
+                            <IconClose className="w-3.5 h-3.5" />
+                            Remove document context
+                          </button>
+                        )}
+                        <div className="max-h-72 overflow-y-auto scroll-thin">
+                          {documents.length === 0 ? (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-6 px-3">
+                              No PDFs uploaded yet.
+                            </p>
+                          ) : documents.map(d => (
+                            <div
+                              key={d._id}
+                              className={`group flex items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                                documentId === d._id ? 'bg-brand-50 dark:bg-brand-900/20' : ''
+                              }`}
+                            >
+                              <button
+                                onClick={() => { setDocumentId(d._id); setDocMenuOpen(false) }}
+                                className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                              >
+                                <IconDocument className={`w-3.5 h-3.5 shrink-0 ${documentId === d._id ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                                <div className="min-w-0">
+                                  <p className={`text-xs font-medium truncate ${documentId === d._id ? 'text-brand-700 dark:text-brand-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                                    {d.filename}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                                    {d.pageCount} pages · {Math.round(d.sizeBytes / 1024)} KB
+                                    {d.truncated && ' · truncated'}
+                                  </p>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => deleteDocument(d._id)}
+                                className="text-slate-300 dark:text-slate-600 hover:text-rose-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Delete"
+                              >
+                                <IconTrash className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 {/* Subject selector */}
                 <div className="relative">
                   <select
@@ -503,16 +637,24 @@ export default function Tutor() {
             {/* COMPOSER */}
             <div className="border-t border-slate-100 dark:border-slate-800 px-4 lg:px-7 py-4 bg-white dark:bg-slate-900">
               <div className="max-w-3xl mx-auto">
-                {activeSubject && (
-                  <div className="mb-2 flex items-center gap-2 text-xs">
+                {(activeSubject || activeDocument) && (
+                  <div className="mb-2 flex items-center gap-2 text-xs flex-wrap">
                     <span className="text-slate-500 dark:text-slate-400">Context:</span>
-                    <span
-                      className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full text-white"
-                      style={{ backgroundColor: activeSubject.color || '#6366F1' }}
-                    >
-                      <IconBook className="w-3 h-3" />
-                      {activeSubject.name}
-                    </span>
+                    {activeSubject && (
+                      <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full text-white"
+                        style={{ backgroundColor: activeSubject.color || '#6366F1' }}
+                      >
+                        <IconBook className="w-3 h-3" />
+                        {activeSubject.name}
+                      </span>
+                    )}
+                    {activeDocument && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-brand-gradient text-white shadow-glow">
+                        <IconDocument className="w-3 h-3" />
+                        {activeDocument.filename}
+                      </span>
+                    )}
                   </div>
                 )}
 

@@ -11,6 +11,7 @@
 
 const Conversation = require('../models/Conversation')
 const Subject = require('../models/Subject')
+const Document = require('../models/Document')
 const aiService = require('../services/aiService')
 
 const handle = (err, res) => {
@@ -23,8 +24,9 @@ exports.list = async (req, res) => {
   try {
     const convos = await Conversation.find({ userId: req.user.id })
       .sort({ updatedAt: -1 })
-      .select('title subjectId updatedAt createdAt messages')
+      .select('title subjectId documentId updatedAt createdAt messages')
       .populate('subjectId', 'name color')
+      .populate('documentId', 'filename')
       .lean()
 
     // Strip messages but keep last preview + count
@@ -32,6 +34,7 @@ exports.list = async (req, res) => {
       _id:        c._id,
       title:      c.title,
       subjectId:  c.subjectId,
+      documentId: c.documentId,
       updatedAt:  c.updatedAt,
       createdAt:  c.createdAt,
       messageCount: c.messages?.length || 0,
@@ -48,6 +51,7 @@ exports.get = async (req, res) => {
   try {
     const c = await Conversation.findOne({ _id: req.params.id, userId: req.user.id })
       .populate('subjectId', 'name color difficultyLevel')
+      .populate('documentId', 'filename pageCount')
     if (!c) return res.status(404).json({ message: 'Conversation not found' })
     res.json(c)
   } catch (err) { handle(err, res) }
@@ -63,6 +67,9 @@ exports.update = async (req, res) => {
     }
     if (req.body.subjectId !== undefined) {
       patch.subjectId = req.body.subjectId || null
+    }
+    if (req.body.documentId !== undefined) {
+      patch.documentId = req.body.documentId || null
     }
     const c = await Conversation.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
@@ -92,7 +99,7 @@ const titleFrom = (text) => {
 
 exports.chat = async (req, res) => {
   try {
-    const { conversationId, message, subjectId } = req.body || {}
+    const { conversationId, message, subjectId, documentId } = req.body || {}
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ message: 'message is required' })
     }
@@ -110,12 +117,16 @@ exports.chat = async (req, res) => {
         userId: req.user.id,
         title: titleFrom(message),
         subjectId: subjectId || null,
+        documentId: documentId || null,
       })
     }
 
-    // Optionally update subject if user changed it mid-conversation
+    // Optionally update subject/document if changed mid-conversation
     if (subjectId !== undefined && conversationId) {
       convo.subjectId = subjectId || null
+    }
+    if (documentId !== undefined && conversationId) {
+      convo.documentId = documentId || null
     }
 
     // Append the user message and persist BEFORE streaming so we don't lose it
@@ -144,10 +155,18 @@ exports.chat = async (req, res) => {
       if (subj) subjectContext = { name: subj.name, difficultyLevel: subj.difficultyLevel }
     }
 
+    // Resolve document context (verify ownership)
+    let documentContext = null
+    if (convo.documentId) {
+      const doc = await Document.findOne({ _id: convo.documentId, userId: req.user.id })
+      if (doc) documentContext = { filename: doc.filename, pageCount: doc.pageCount, content: doc.content }
+    }
+
     try {
       const fullContent = await aiService.tutorStream({
         messages: convo.messages,
         subjectContext,
+        documentContext,
         res,
       })
 

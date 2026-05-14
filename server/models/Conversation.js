@@ -9,6 +9,7 @@ const ConversationSchema = new mongoose.Schema({
   userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   title:     { type: String, default: 'New conversation', maxlength: 120 },
   subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', default: null },
+  documentId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Document', default: null },
   messages:  { type: [MessageSchema], default: [] },
 }, { timestamps: true })
 

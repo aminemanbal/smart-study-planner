@@ -457,12 +457,18 @@ You do NOT have access to the student's personal data (tasks, exams,
 progress) — that's the planning coach's job. If they ask about scheduling
 or personal progress, gently redirect to the dashboard.`
 
-async function tutorStream({ messages, subjectContext, res }) {
+async function tutorStream({ messages, subjectContext, documentContext, res }) {
   const client = getClient()
 
-  const sysPrompt = subjectContext
-    ? `${TUTOR_SYSTEM}\n\nSUBJECT CONTEXT: "${subjectContext.name}" (difficulty: ${subjectContext.difficultyLevel}). Tailor depth and assumed prerequisites to this subject.`
-    : TUTOR_SYSTEM
+  let sysPrompt = TUTOR_SYSTEM
+  if (subjectContext) {
+    sysPrompt += `\n\nSUBJECT CONTEXT: "${subjectContext.name}" (difficulty: ${subjectContext.difficultyLevel}). Tailor depth and assumed prerequisites to this subject.`
+  }
+  if (documentContext) {
+    // Cap to ~30K chars in the prompt to stay well under Groq's context window
+    const text = documentContext.content.slice(0, 30000)
+    sysPrompt += `\n\nDOCUMENT CONTEXT — the student has attached "${documentContext.filename}" (${documentContext.pageCount} pages). Use ONLY this material as the source of truth for facts in this document, and prefer it over your general knowledge when the student asks about its content. If they ask something the document doesn't cover, say so first, then offer general knowledge.\n\n=== BEGIN DOCUMENT ===\n${text}\n=== END DOCUMENT ===`
+  }
 
   const convo = [
     { role: 'system', content: sysPrompt },

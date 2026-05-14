@@ -20,7 +20,7 @@ export const deleteConversation = (id)      => api.delete(`/api/tutor/conversati
  * @param {object?}  opts
  * @param {AbortSignal?} opts.signal
  */
-export const chat = async ({ conversationId, message, subjectId }, handlers, { signal } = {}) => {
+export const chat = async ({ conversationId, message, subjectId, documentId }, handlers, { signal } = {}) => {
   const baseURL = api.defaults.baseURL || ''
   const token = localStorage.getItem('token')
 
@@ -31,7 +31,7 @@ export const chat = async ({ conversationId, message, subjectId }, handlers, { s
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       Accept: 'text/event-stream',
     },
-    body: JSON.stringify({ conversationId: conversationId || null, message, subjectId: subjectId || null }),
+    body: JSON.stringify({ conversationId: conversationId || null, message, subjectId: subjectId || null, documentId: documentId || null }),
     signal,
   })
 
