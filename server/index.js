@@ -18,6 +18,8 @@ app.use('/api/progress', require('./routes/progress.routes'))
 app.use('/api/ai',       require('./routes/ai.routes'))
 app.use('/api/tutor',    require('./routes/tutor.routes'))
 app.use('/api/sessions', require('./routes/sessions.routes'))
+app.use('/api/notes',       require('./routes/notes.routes'))
+app.use('/api/flashcards',  require('./routes/flashcards.routes'))
 
 app.use((err, req, res, next) => {
   console.error(err.stack)

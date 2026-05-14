@@ -13,6 +13,8 @@ import Progress from './pages/Progress'
 import Profile from './pages/Profile'
 import Tutor from './pages/Tutor'
 import Focus from './pages/Focus'
+import Notes from './pages/Notes'
+import Review from './pages/Review'
 
 const Loader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -49,6 +51,8 @@ function AppRoutes() {
       <Route path="/profile"   element={<Protected><Profile /></Protected>} />
       <Route path="/tutor"     element={<Protected><Tutor /></Protected>} />
       <Route path="/focus"     element={<Protected><Focus /></Protected>} />
+      <Route path="/notes"     element={<Protected><Notes /></Protected>} />
+      <Route path="/review"    element={<Protected><Review /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

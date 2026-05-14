@@ -490,10 +490,68 @@ async function tutorStream({ messages, subjectContext, res }) {
   return fullContent
 }
 
+/* ------------------------------------------------------------------ */
+/* 5. FLASHCARD GENERATION                                             */
+/* ------------------------------------------------------------------ */
+
+const FLASHCARD_SYSTEM = `You are an expert tutor creating high-quality study flashcards.
+
+PRINCIPLES
+- Each card tests ONE specific atomic fact or concept.
+- Front is a clear, concise question. Back is the precise answer.
+- Avoid yes/no questions. Prefer "what", "why", "how", "define", "compare".
+- Cover the breadth of the source material — don't cluster everything around the start.
+- Use the student's vocabulary. Don't introduce jargon unless the source does.
+- Keep front and back short: front ≤ 120 chars, back ≤ 300 chars whenever possible.
+
+OUTPUT FORMAT — return ONLY a JSON object:
+{ "cards": [ { "front": string, "back": string } ] }
+
+Generate EXACTLY the requested number of cards. No prose outside JSON.`
+
+async function generateFlashcards ({ text, count, subjectName }) {
+  const client = getClient()
+
+  const user = `Subject: ${subjectName || 'general'}
+Number of cards: ${count}
+
+Source material:
+"""
+${text.slice(0, 12000)}
+"""
+
+Generate ${count} flashcards covering the most important concepts.`
+
+  const completion = await client.chat.completions.create({
+    model: MODEL,
+    response_format: { type: 'json_object' },
+    max_completion_tokens: 4000,
+    temperature: 0.4,
+    messages: [
+      { role: 'system', content: FLASHCARD_SYSTEM },
+      { role: 'user',   content: user },
+    ],
+  })
+
+  const txt = completion.choices[0]?.message?.content
+  if (!txt) throw new Error('AI returned empty response')
+  const parsed = JSON.parse(txt)
+  if (!Array.isArray(parsed.cards)) throw new Error('AI response missing "cards" array')
+
+  return parsed.cards
+    .filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
+    .slice(0, count)
+    .map(c => ({
+      front: c.front.trim().slice(0, 1000),
+      back:  c.back.trim().slice(0, 2000),
+    }))
+}
+
 module.exports = {
   generateAIStudyPlan,
   getAIInsights,
   chatStream,
   tutorStream,
+  generateFlashcards,
   MODEL,
 }
