@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import ThemeToggle from './ThemeToggle'
 import {
   IconDashboard, IconBook, IconCalendar, IconCheck, IconChart,
-  IconLogout, IconLogo, IconClose, IconSpark, IconUser, IconAcademic
+  IconLogout, IconLogo, IconClose, IconSpark, IconUser, IconAcademic, IconTomato
 } from './Icons'
 
 const links = [
@@ -11,6 +11,7 @@ const links = [
   { to: '/subjects',  label: 'Subjects',  Icon: IconBook },
   { to: '/exams',     label: 'Exams',     Icon: IconCalendar },
   { to: '/tasks',     label: 'Tasks',     Icon: IconCheck },
+  { to: '/focus',     label: 'Focus',     Icon: IconTomato },
   { to: '/progress',  label: 'Progress',  Icon: IconChart },
   { to: '/profile',   label: 'Profile',   Icon: IconUser },
 ]

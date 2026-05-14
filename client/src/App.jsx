@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { PomodoroProvider } from './context/PomodoroContext'
+import PomodoroMiniWidget from './components/PomodoroMiniWidget'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -10,6 +12,7 @@ import Tasks from './pages/Tasks'
 import Progress from './pages/Progress'
 import Profile from './pages/Profile'
 import Tutor from './pages/Tutor'
+import Focus from './pages/Focus'
 
 const Loader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -45,8 +48,19 @@ function AppRoutes() {
       <Route path="/progress"  element={<Protected><Progress /></Protected>} />
       <Route path="/profile"   element={<Protected><Profile /></Protected>} />
       <Route path="/tutor"     element={<Protected><Tutor /></Protected>} />
+      <Route path="/focus"     element={<Protected><Focus /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  )
+}
+
+function AppShell() {
+  const { token } = useAuth()
+  return (
+    <>
+      <AppRoutes />
+      {token && <PomodoroMiniWidget />}
+    </>
   )
 }
 
@@ -55,7 +69,9 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <PomodoroProvider>
+            <AppShell />
+          </PomodoroProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
