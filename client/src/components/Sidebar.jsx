@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   IconDashboard, IconBook, IconCalendar, IconCheck, IconChart,
-  IconLogout, IconLogo, IconClose, IconSpark, IconUser
+  IconLogout, IconLogo, IconClose, IconSpark, IconUser, IconAcademic
 } from './Icons'
 
 const links = [
@@ -12,6 +12,10 @@ const links = [
   { to: '/tasks',     label: 'Tasks',     Icon: IconCheck },
   { to: '/progress',  label: 'Progress',  Icon: IconChart },
   { to: '/profile',   label: 'Profile',   Icon: IconUser },
+]
+
+const aiLinks = [
+  { to: '/tutor',     label: 'AI Tutor',  Icon: IconAcademic },
 ]
 
 export default function Sidebar({ open, onClose, onOpenChat }) {
@@ -88,17 +92,40 @@ export default function Sidebar({ open, onClose, onOpenChat }) {
             ))}
           </ul>
 
+          <p className="px-3 mt-7 mb-3 section-title">AI</p>
+          <ul className="space-y-1 mb-3">
+            {aiLinks.map(({ to, label, Icon }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-brand-50 text-brand-700 shadow-soft'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600' : ''}`} />
+                      {label}
+                      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-500" />}
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
           {onOpenChat && (
-            <>
-              <p className="px-3 mt-7 mb-3 section-title">AI</p>
-              <button
-                onClick={() => { onClose?.(); onOpenChat() }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-gradient shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
-              >
-                <IconSpark className="w-5 h-5" />
-                Ask Pulse
-              </button>
-            </>
+            <button
+              onClick={() => { onClose?.(); onOpenChat() }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-gradient shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              <IconSpark className="w-5 h-5" />
+              Ask Pulse
+            </button>
           )}
         </nav>
 

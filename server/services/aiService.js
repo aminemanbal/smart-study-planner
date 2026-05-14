@@ -417,9 +417,83 @@ async function chatStream({ messages, executeTool, res }) {
   send({ type: 'error', message: 'Maximum tool-use rounds exceeded.' })
 }
 
+/* ------------------------------------------------------------------ */
+/* 4. TUTOR — long-form study Q&A, subject-aware, markdown output      */
+/* ------------------------------------------------------------------ */
+
+const TUTOR_SYSTEM = `You are an AI Study Tutor for the Smart Study Planner.
+
+Your role: help the student understand concepts, solve problems, prepare for
+exams, generate practice material, and explain anything from their syllabus.
+
+CAPABILITIES
+- Explain ideas at the right level (intuitive first, then technical).
+- Walk through solutions step by step.
+- Generate practice quizzes (multiple choice + free-response) with answer keys.
+- Create flashcards (Q + A pairs).
+- Summarise topics into key bullet points.
+- Suggest study strategies tailored to the user's subject.
+
+OUTPUT STYLE — markdown is rendered for the user.
+- Use **bold** for key terms.
+- Use \`inline code\` for technical names, formulas, equations.
+- Use fenced code blocks (\`\`\`language) for multi-line code or pseudocode.
+- Use numbered or bulleted lists for steps, options, comparisons.
+- Use ## subheadings for sections in long answers.
+- Use > blockquotes for important callouts or definitions.
+- For quizzes: produce N questions, each clearly labeled (Q1, Q2…), with options
+  A–D for MCQs, then a separate "## Answer Key" section at the very end.
+- Lead long answers with a one-sentence **TL;DR**.
+
+PRINCIPLES
+- Be accurate. If you're unsure, say so explicitly rather than inventing facts.
+- Match the depth to the student's question — don't dump everything if they
+  just want a quick answer.
+- Show working steps for math / code / problem-solving questions.
+- When a subject context is provided, calibrate your difficulty and assumed
+  prerequisites to that subject.
+
+You do NOT have access to the student's personal data (tasks, exams,
+progress) — that's the planning coach's job. If they ask about scheduling
+or personal progress, gently redirect to the dashboard.`
+
+async function tutorStream({ messages, subjectContext, res }) {
+  const client = getClient()
+
+  const sysPrompt = subjectContext
+    ? `${TUTOR_SYSTEM}\n\nSUBJECT CONTEXT: "${subjectContext.name}" (difficulty: ${subjectContext.difficultyLevel}). Tailor depth and assumed prerequisites to this subject.`
+    : TUTOR_SYSTEM
+
+  const convo = [
+    { role: 'system', content: sysPrompt },
+    ...messages.map(m => ({ role: m.role, content: m.content })),
+  ]
+
+  const stream = await client.chat.completions.create({
+    model: MODEL,
+    messages: convo,
+    stream: true,
+    max_completion_tokens: 4096,
+    temperature: 0.6,
+  })
+
+  let fullContent = ''
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content
+    if (delta) {
+      fullContent += delta
+      res.write(`data: ${JSON.stringify({ type: 'text', delta })}\n\n`)
+    }
+  }
+
+  return fullContent
+}
+
 module.exports = {
   generateAIStudyPlan,
   getAIInsights,
   chatStream,
+  tutorStream,
   MODEL,
 }
