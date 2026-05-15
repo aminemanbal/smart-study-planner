@@ -8,7 +8,32 @@
 */
 
 const Document = require('../models/Document')
-const pdfParse = require('pdf-parse')
+const pdfParseModule = require('pdf-parse')
+
+/*
+  pdf-parse v1 exports a plain function:    const pdfParse = require('pdf-parse')
+  pdf-parse v2 exports an object with a class:  { PDFParse } or { default }
+  Handle both so this works regardless of which is installed.
+*/
+const parsePdf = async (buffer) => {
+  if (typeof pdfParseModule === 'function') {
+    // v1.x — pdfParse(buffer) -> { text, numpages, ... }
+    return pdfParseModule(buffer)
+  }
+  if (typeof pdfParseModule?.default === 'function') {
+    return pdfParseModule.default(buffer)
+  }
+  if (typeof pdfParseModule?.PDFParse === 'function') {
+    // v2.x — class-based; getText() returns { text }
+    const parser = new pdfParseModule.PDFParse({ data: buffer })
+    const out = await parser.getText()
+    return {
+      text: out.text || out.pages?.map(p => p.text).join('\n') || '',
+      numpages: out.numpages || out.pages?.length || 0,
+    }
+  }
+  throw new Error('pdf-parse module has an unrecognised shape — check the installed version')
+}
 
 const MAX_CHARS = 200_000  // hard cap on stored text per doc
 
@@ -21,7 +46,7 @@ exports.upload = async (req, res) => {
 
     let parsed
     try {
-      parsed = await pdfParse(req.file.buffer)
+      parsed = await parsePdf(req.file.buffer)
     } catch (err) {
       return res.status(422).json({ message: 'Could not parse PDF: ' + err.message })
     }
