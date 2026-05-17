@@ -11,6 +11,7 @@ router.post('/bulk',         auth, ctrl.bulkCreate)
 router.post('/generate',     auth, ctrl.generate)
 router.patch('/:id',         auth, ctrl.update)
 router.post('/:id/review',   auth, ctrl.review)
+router.delete('/bulk',       auth, ctrl.bulkRemove)
 router.delete('/:id',        auth, ctrl.remove)
 
 module.exports = router

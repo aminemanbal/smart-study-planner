@@ -9,3 +9,4 @@ export const generate  = (body)   => api.post('/api/flashcards/generate', body).
 export const update    = (id, b)  => api.patch(`/api/flashcards/${id}`, b).then(r => r.data)
 export const review    = (id, q)  => api.post(`/api/flashcards/${id}/review`, { quality: q }).then(r => r.data)
 export const remove    = (id)     => api.delete(`/api/flashcards/${id}`).then(r => r.data)
+export const bulkRemove = (body)  => api.delete('/api/flashcards/bulk', { data: body }).then(r => r.data)
