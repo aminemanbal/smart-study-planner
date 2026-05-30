@@ -5,10 +5,12 @@ const ThemeContext = createContext({ theme: 'light', toggle: () => {}, setTheme:
 const STORAGE_KEY = 'studyplanner-theme'
 
 const initialTheme = () => {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined') return 'dark'
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'light' || saved === 'dark') return saved
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  // Dark is the default (students mostly study in the evening); the user's
+  // explicit choice is then remembered in localStorage.
+  return 'dark'
 }
 
 export const ThemeProvider = ({ children }) => {
