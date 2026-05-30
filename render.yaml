@@ -1,0 +1,27 @@
+# Render Blueprint — backend (Node.js / Express)
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Either commit this file and use Render's "New + → Blueprint" flow,
+# or configure the same values manually in the dashboard (see DEPLOYMENT.md).
+
+services:
+  - type: web
+    name: smart-study-planner-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      # Set the secret values in the Render dashboard (do NOT hardcode here).
+      - key: MONGO_URI
+        sync: false          # paste your Atlas connection string in the dashboard
+      - key: JWT_SECRET
+        sync: false          # paste a long random string in the dashboard
+      - key: GROQ_API_KEY
+        sync: false          # paste your Groq key in the dashboard
+      - key: CLIENT_URL
+        sync: false          # e.g. https://smart-study-planner.vercel.app
+      # PORT is provided automatically by Render — do not set it.

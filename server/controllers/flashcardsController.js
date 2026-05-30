@@ -229,3 +229,24 @@ exports.remove = async (req, res) => {
     res.json({ message: 'Flashcard deleted' })
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
+
+/*
+  DELETE /api/flashcards/bulk
+    Body: { subjectId?, noteId? } — at least one filter required.
+    Bulk-delete the user's cards matching the filters.
+*/
+exports.bulkRemove = async (req, res) => {
+  try {
+    const { subjectId, noteId } = req.body || {}
+    if (!subjectId && !noteId) {
+      return res.status(400).json({
+        message: 'Provide subjectId or noteId — refusing to delete all cards without an explicit scope.',
+      })
+    }
+    const filter = { userId: req.user.id }
+    if (subjectId) filter.subjectId = subjectId
+    if (noteId)    filter.noteId    = noteId
+    const result = await Flashcard.deleteMany(filter)
+    res.json({ message: `Deleted ${result.deletedCount} flashcard(s)`, deletedCount: result.deletedCount })
+  } catch (err) { res.status(500).json({ message: err.message }) }
+}

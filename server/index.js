@@ -4,7 +4,14 @@ const cors = require('cors')
 const connectDB = require('./config/db')
 
 const app = express()
-app.use(cors())
+
+// CORS: in production, lock to the deployed frontend origin(s) via CLIENT_URL
+// (comma-separated). If unset (local dev), allow all origins.
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(s => s.trim()).filter(Boolean)
+  : null
+app.use(cors(allowedOrigins ? { origin: allowedOrigins } : {}))
+
 app.use(express.json({ limit: '2mb' })) // avatars are base64-encoded
 
 app.get('/', (req, res) => res.json({ status: 'Smart Study Planner API running' }))
