@@ -216,7 +216,7 @@ export default function Dashboard() {
               <div>
                 <h2 className="font-display font-bold text-slate-900 dark:text-slate-100">AI Suggestions</h2>
                 <p className="text-xs text-slate-400">
-                  {aiLoading ? 'Pulse is thinking…' : aiSuggestions ? 'Powered by Claude' : aiError ? 'Showing offline tips' : 'Heuristic tips'}
+                  {aiLoading ? 'Pulse is thinking…' : aiSuggestions ? 'Powered by Llama 3.3' : aiError ? 'Showing offline tips' : 'Heuristic tips'}
                 </p>
               </div>
             </div>
